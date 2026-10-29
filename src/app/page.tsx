@@ -1,10 +1,9 @@
 "use client";
-import { useState } from "react";
-
+import { useTheme } from "@/context/ThemeContext";
 import Navbar from "@/components/Navbar";
 import HomeHero from "@/components/HomeHero";
 export default function Home() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { isDarkMode, setIsDarkMode } = useTheme();
 
   return (
     <div

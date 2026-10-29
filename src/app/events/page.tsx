@@ -1,10 +1,8 @@
 "use client";
-import { useState } from "react";
-import Image from "next/image";
-import PrimaryButton from "@/components/Primarybutton";
+import { useTheme } from "@/context/ThemeContext";
 import Navbar from "@/components/Navbar";
 export default function Events() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { isDarkMode, setIsDarkMode } = useTheme();
 
   return (
       <div
