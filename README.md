@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div class="logo-container">
+  <img src="public/UtsavZeroLogo.png" alt="UtsavZero Logo">
+</div>
+**Celebrate Together. Breathe Better. Choose UtsavZero.**
 
-## Getting Started
+UtsavZero is a technology-driven initiative focused on reducing Delhi's Diwali air pollution by making cleaner, community-based celebrations easier to discover and attend.
 
-First, run the development server:
+Developed as part of the **DTU SEVA innovation challenge**, UtsavZero aims to connect residents with organised community celebrations and encourage more responsible festivities through technology.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🎯 Problem Statement
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Diwali celebrations involving firecrackers can contribute to severe air pollution in Delhi, worsening air quality and affecting public well-being. Cleaner alternatives often lack a centralised platform where residents can easily discover nearby events and participate in organised celebrations.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+UtsavZero aims to bridge this gap by making community-based, cleaner festivities more accessible and convenient.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 💡 Our Solution
 
-## Learn More
+UtsavZero is a map-based event discovery platform designed to help Delhi residents explore community celebrations, find nearby venues, and participate in organised events.
 
-To learn more about Next.js, take a look at the following resources:
+### ✨ Key Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- 🗺️ **Interactive Map:** Discover community celebrations and nearby venues.
+- 🎉 **Event Discovery:** Browse events, schedules, locations, and descriptions.
+- 🎟️ **Booking System:** Reserve spots at community celebrations.
+- 👥 **Capacity Management:** Help organisers manage attendance and available spots.
+- 🌱 **Pollution Awareness:** Encourage cleaner alternatives to pollution-intensive celebrations.
+- 📊 **Impact Dashboard:** Present estimated environmental benefits using transparent assumptions and methodology.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🎯 Mission
 
-## Deploy on Vercel
+To work towards a cleaner Delhi by making responsible celebrations accessible, engaging, and convenient through technology and community participation.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🛠️ Technology Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The planned technology stack includes:
+
+- **Frontend:** Next.js, React, TypeScript
+- **Styling:** Tailwind CSS
+- **Maps:** Leaflet and OpenStreetMap
+- **Backend:** Supabase
+- **Database:** PostgreSQL
+- **Deployment:** Vercel
+
+*The stack and features will evolve as development progresses.*
+
+## 🚀 Project Status
+
+UtsavZero is currently in the prototype and development phase. The initial focus is on building a responsive user interface, event discovery experience, interactive map, and booking workflow.
+
+Environmental impact figures will be treated as estimates unless supported by measured results.
+
+## 🌍 Vision
+
+We envision a future where celebrating Diwali and protecting the environment go hand in hand. By using technology to connect people with cleaner community celebrations, UtsavZero aims to contribute towards a greener and healthier Delhi.
+
+## 👥 Team
+
+Built by student team as part of the DTU SEVA innovation challenge.
+
+---
+
+**Celebrate Together. Breathe Better. Choose UtsavZero. 🌿**
