@@ -1,9 +1,9 @@
 "use client";
 import { useTheme } from "@/context/ThemeContext";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/layout/Navbar";
 import HomeHero from "@/components/HomeContent/HomeHero";
 import HomeContent from "@/components/HomeContent/HomeContent";
-import HomeFooter from "@/components/HomeContent/HomeFooter";
+import Footer from "@/components/layout/Footer";
 export default function Home() {
   const { isDarkMode, setIsDarkMode } = useTheme();
 
@@ -27,7 +27,7 @@ export default function Home() {
 
       <div className="relative z-20 mt-auto w-full">
 
-        <HomeFooter />
+        <Footer />
       </div>
     </div>
   );

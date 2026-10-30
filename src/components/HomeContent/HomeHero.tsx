@@ -1,7 +1,7 @@
 
 import Image from "next/image";
-import PrimaryBtnsvg from "@/components/PrimaryBtnsvg";
-import SecondryBtnsvg from "@/components/SecondryBtnsvg";
+import PrimaryBtnsvg from "@/components/ui/PrimaryBtnsvg";
+import SecondryBtnsvg from "@/components/ui/SecondryBtnsvg";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { Play } from "lucide-react";

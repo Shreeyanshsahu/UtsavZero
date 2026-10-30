@@ -4,7 +4,7 @@
 import { useRouter } from "next/navigation";
 import { Globe2, ArrowRight } from "lucide-react";
 
-export default function HomeFooter() {
+export default function Footer() {
   const router = useRouter();
 
   return (

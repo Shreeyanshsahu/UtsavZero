@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import PrimaryButton from "@/components/Primarybutton";
+import PrimaryButton from "@/components/ui/Primarybutton";
 import { Sun, Moon } from "lucide-react";
 import Link from "next/link";
 const navLinks = [

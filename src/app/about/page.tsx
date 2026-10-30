@@ -1,6 +1,6 @@
 "use client";
 
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/layout/Navbar";
 import { useTheme } from "@/context/ThemeContext";
 export default function About() {
   const { isDarkMode, setIsDarkMode } = useTheme();
