@@ -1,10 +1,13 @@
+
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
-html{
+
+html {
   margin: 0;
   padding: 0;
   min-height: 100%;
@@ -12,15 +15,14 @@ html{
 
 @theme inline {
   --font-lora: var(--lora-font);
-}
-* {
-  box-sizing: border-box;
-}
-@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+* {
+  box-sizing: border-box;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -34,7 +36,60 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
-    margin: 0;
+  margin: 0;
   padding: 0;
   min-height: 100%;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* --------------------------------
+   UtsavZero Leaflet Map
+--------------------------------- */
+
+.utsav-map-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  font-family: inherit;
+  z-index: 0;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+}
+
+.leaflet-popup-content {
+  margin: 12px;
+}
+
+.leaflet-control-zoom a {
+  color: #F0440A !important;
+}
+
+/* Optional dark map appearance */
+
+.utsav-dark-tiles {
+  filter: invert(90%) hue-rotate(180deg) brightness(85%) contrast(90%);
+  transition: filter 300ms ease;
+}
+
+
+/* UtsavZero dark map */
+
+.utsav-dark-map .leaflet-tile-pane {
+  filter: invert(90%) hue-rotate(180deg) brightness(85%) contrast(90%);
+  transition: filter 300ms ease;
 }

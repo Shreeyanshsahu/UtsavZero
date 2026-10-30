@@ -1,32 +1,39 @@
+
 "use client";
+
 import { useTheme } from "@/context/ThemeContext";
+
 import Navbar from "@/components/layout/Navbar";
 import HomeHero from "@/components/HomeContent/HomeHero";
 import HomeContent from "@/components/HomeContent/HomeContent";
 import Footer from "@/components/layout/Footer";
+
 export default function Home() {
   const { isDarkMode, setIsDarkMode } = useTheme();
 
   return (
     <div
-      className={` relative flex flex-col ${isDarkMode ? "bg-[#171A19]" : "bg-[#FFF8EB]"
-        } flex-1 items-center font-sans w-full min-h-screen`}
+      className={`flex min-h-dvh w-full flex-col font-sans transition-colors duration-300 ${
+        isDarkMode ? "bg-[#171A19]" : "bg-[#FFF8EB]"
+      }`}
     >
-      {/* Floating navbar */}
-      <div className="absolute top-0 left-0 z-50 w-full">
+      {/* Navbar */}
+      <div className="sticky top-0 z-50 w-full">
         <Navbar
           isDarkMode={isDarkMode}
           setIsDarkMode={setIsDarkMode}
         />
       </div>
-      {/* Main content */}
-      <div className="flex-1 w-full">
+
+      {/* Main Homepage Content */}
+      <div className="flex w-full flex-1 flex-col">
         <HomeHero />
+
         <HomeContent />
       </div>
 
+      {/* Footer */}
       <div className="relative z-20 mt-auto w-full">
-
         <Footer />
       </div>
     </div>
