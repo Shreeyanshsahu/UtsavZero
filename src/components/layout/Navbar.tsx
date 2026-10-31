@@ -4,13 +4,17 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Sun,
   Moon,
   Menu,
   X,
+  UserRound,
+  LogOut,
 } from "lucide-react";
+
+import { useAuth } from "@/context/AuthContext";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -29,8 +33,12 @@ export default function Navbar({
   setIsDarkMode,
 }: NavbarProps) {
   const pathname = usePathname();
+  const router = useRouter();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+
+  const { user, profile, roles, loading, signOut } = useAuth();
 
   const getLinkStyle = (href: string) => {
     const isActive = pathname === href;
@@ -47,6 +55,115 @@ export default function Navbar({
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   };
+
+  const handleSignOut = async () => {
+    if (signingOut) return;
+
+    setSigningOut(true);
+
+    const { error } = await signOut();
+
+    if (error) {
+      console.error("Logout error:", error.message);
+      setSigningOut(false);
+      return;
+    }
+
+    closeMobileMenu();
+    router.replace("/");
+    router.refresh();
+    setSigningOut(false);
+  };
+
+  const displayName =
+    profile?.full_name ||
+    user?.email?.split("@")[0] ||
+    "My Account";
+
+  const getRoleLabel = () => {
+    const labels: string[] = [];
+
+    if (roles.includes("citizen")) labels.push("Citizen");
+    if (roles.includes("private_organizer")) labels.push("Organizer");
+    if (roles.includes("civic_demo_admin")) labels.push("Civic Admin");
+
+    return labels.join(" · ");
+  };
+
+  const themeButton = (
+    <button
+      type="button"
+      onClick={() => setIsDarkMode(!isDarkMode)}
+      aria-label={
+        isDarkMode ? "Switch to light mode" : "Switch to dark mode"
+      }
+      className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
+        isDarkMode
+          ? "bg-[#292E2B] text-[#FFBE45] hover:bg-[#343B36]"
+          : "bg-[#FFF0D8] text-[#F0440A] hover:bg-[#FFE5C0]"
+      }`}
+    >
+      {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+    </button>
+  );
+
+  const authActions = (
+    <>
+      {loading ? (
+        <div className="h-9 w-24 animate-pulse rounded-lg bg-black/10" />
+      ) : user ? (
+        <>
+          <div className="flex min-w-0 flex-col">
+            <span
+              className={`max-w-[150px] truncate text-sm font-semibold ${
+                isDarkMode ? "text-[#FFF8EB]" : "text-[#38231C]"
+              }`}
+            >
+              {displayName}
+            </span>
+
+            <span className="text-xs text-gray-500">
+              {getRoleLabel()}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSignOut}
+            disabled={signingOut}
+            className={`flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 ${
+              isDarkMode
+                ? "border-[#454B46] text-[#FFF8EB] hover:bg-[#292E2B]"
+                : "border-[#EADCC9] text-[#38231C] hover:bg-[#FFF0D8]"
+            }`}
+          >
+            <LogOut size={16} />
+            {signingOut ? "Signing out..." : "Sign Out"}
+          </button>
+        </>
+      ) : (
+        <>
+          <Link
+            href="/login"
+            className={`px-3 py-2 text-sm font-medium transition-colors ${
+              isDarkMode
+                ? "text-[#FFF8EB] hover:text-[#FFBE45]"
+                : "text-[#38231C] hover:text-[#F0440A]"
+            }`}
+          >
+            Login
+          </Link>
+
+          <Link
+            href="/signup"
+            className="rounded-lg bg-gradient-to-r from-[#FFBE45] via-[#FF6A16] to-[#F0440A] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          >
+            Sign Up
+          </Link>
+        </>
+      )}
+    </>
+  );
 
   return (
     <header
@@ -89,38 +206,15 @@ export default function Navbar({
           ))}
         </div>
 
-        {/* Desktop Theme Toggle */}
-        <button
-          type="button"
-          onClick={() => setIsDarkMode(!isDarkMode)}
-          aria-label={
-            isDarkMode ? "Switch to light mode" : "Switch to dark mode"
-          }
-          className={`hidden h-10 w-10 items-center justify-center rounded-full transition-colors md:flex ${
-            isDarkMode
-              ? "bg-[#292E2B] text-[#FFBE45] hover:bg-[#343B36]"
-              : "bg-[#FFF0D8] text-[#F0440A] hover:bg-[#FFE5C0]"
-          }`}
-        >
-          {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-        </button>
+        {/* Desktop Actions */}
+        <div className="hidden items-center gap-3 md:flex">
+          {authActions}
+          {themeButton}
+        </div>
 
         {/* Mobile Actions */}
         <div className="flex items-center gap-2 md:hidden">
-          <button
-            type="button"
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            aria-label={
-              isDarkMode ? "Switch to light mode" : "Switch to dark mode"
-            }
-            className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
-              isDarkMode
-                ? "bg-[#292E2B] text-[#FFBE45]"
-                : "bg-[#FFF0D8] text-[#F0440A]"
-            }`}
-          >
-            {isDarkMode ? <Sun size={19} /> : <Moon size={19} />}
-          </button>
+          {themeButton}
 
           <button
             type="button"
@@ -152,6 +246,8 @@ export default function Navbar({
           }`}
         >
           <div className="mx-auto flex max-w-lg flex-col gap-1">
+
+            {/* Navigation Links */}
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -171,6 +267,83 @@ export default function Navbar({
                 {link.name}
               </Link>
             ))}
+
+            {/* Mobile Authentication */}
+            <div
+              className={`mt-3 border-t pt-4 ${
+                isDarkMode
+                  ? "border-[#343B36]"
+                  : "border-[#EADCC9]"
+              }`}
+            >
+              {loading ? (
+                <p className="px-4 py-2 text-sm text-gray-500">
+                  Loading account...
+                </p>
+              ) : user ? (
+                <div className="space-y-3 px-4">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                        isDarkMode
+                          ? "bg-[#292E2B] text-[#FFBE45]"
+                          : "bg-[#FFF0D8] text-[#F0440A]"
+                      }`}
+                    >
+                      <UserRound size={20} />
+                    </div>
+
+                    <div className="min-w-0">
+                      <p
+                        className={`truncate text-sm font-semibold ${
+                          isDarkMode
+                            ? "text-[#FFF8EB]"
+                            : "text-[#38231C]"
+                        }`}
+                      >
+                        {displayName}
+                      </p>
+
+                      <p className="text-xs text-gray-500">
+                        {getRoleLabel()}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    disabled={signingOut}
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#F0440A] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
+                  >
+                    <LogOut size={16} />
+                    {signingOut ? "Signing out..." : "Sign Out"}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-3 px-4">
+                  <Link
+                    href="/login"
+                    onClick={closeMobileMenu}
+                    className={`flex-1 rounded-lg border px-4 py-3 text-center text-sm font-medium ${
+                      isDarkMode
+                        ? "border-[#454B46] text-[#FFF8EB]"
+                        : "border-[#EADCC9] text-[#38231C]"
+                    }`}
+                  >
+                    Login
+                  </Link>
+
+                  <Link
+                    href="/signup"
+                    onClick={closeMobileMenu}
+                    className="flex-1 rounded-lg bg-gradient-to-r from-[#FFBE45] to-[#F0440A] px-4 py-3 text-center text-sm font-semibold text-white"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
