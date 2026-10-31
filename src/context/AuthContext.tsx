@@ -50,7 +50,7 @@ type AuthContextType = {
 
   refreshProfile: () => Promise<void>;
 
-  signInWithGoogle: () => Promise<{ error: Error | null }>;
+  signInWithGoogle(redirectTo?: string): Promise<{ error: Error | null }>;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -195,11 +195,18 @@ export function AuthProvider({
     return { error };
   };
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (redirectTo = "/") => {
+    const callbackUrl = new URL(
+      "/auth/callback",
+      window.location.origin
+    );
+
+    callbackUrl.searchParams.set("next", redirectTo);
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callbackUrl.toString(),
       },
     });
 

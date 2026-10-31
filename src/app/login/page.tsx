@@ -1,6 +1,6 @@
 
 "use client";
-
+import { useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,7 +16,18 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
+  const searchParams = useSearchParams();
 
+  const getRedirectPath = () => {
+    const next = searchParams.get("next");
+
+    // Prevent external redirects and malformed paths.
+    if (!next || !next.startsWith("/") || next.startsWith("//")) {
+      return "/";
+    }
+
+    return next;
+  };
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
@@ -30,7 +41,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.replace("/");
+    router.replace(getRedirectPath());
     router.refresh();
   };
 
@@ -38,7 +49,7 @@ export default function LoginPage() {
     setError("");
     setGoogleLoading(true);
 
-    const { error } = await signInWithGoogle();
+    const { error } = await signInWithGoogle(getRedirectPath());
 
     if (error) {
       setError(error.message);
@@ -69,10 +80,10 @@ export default function LoginPage() {
             <Loader2 className="animate-spin" size={20} />
           ) : (
             <svg viewBox="0 0 48 48" className="h-5 w-5">
-              <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.5l6.7-6.7C35.6 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.3 13.6 17.7 9.5 24 9.5Z"/>
-              <path fill="#4285F4" d="M46.1 24.5c0-1.6-.2-3.2-.5-4.7H24v9h12.4c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7-10.1 7-17.3Z"/>
-              <path fill="#FBBC05" d="M10.4 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.8-6.1C.9 16.6 0 20.2 0 24s.9 7.4 2.6 10.8l7.8-6.1Z"/>
-              <path fill="#34A853" d="M24 48c6.3 0 11.6-2.1 15.4-5.8l-7.5-5.8c-2.1 1.4-4.8 2.2-7.9 2.2-6.3 0-11.7-4.1-13.6-9.8l-7.8 6.1C6.5 42.6 14.6 48 24 48Z"/>
+              <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.5l6.7-6.7C35.6 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.3 13.6 17.7 9.5 24 9.5Z" />
+              <path fill="#4285F4" d="M46.1 24.5c0-1.6-.2-3.2-.5-4.7H24v9h12.4c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7-10.1 7-17.3Z" />
+              <path fill="#FBBC05" d="M10.4 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.8-6.1C.9 16.6 0 20.2 0 24s.9 7.4 2.6 10.8l7.8-6.1Z" />
+              <path fill="#34A853" d="M24 48c6.3 0 11.6-2.1 15.4-5.8l-7.5-5.8c-2.1 1.4-4.8 2.2-7.9 2.2-6.3 0-11.7-4.1-13.6-9.8l-7.8 6.1C6.5 42.6 14.6 48 24 48Z" />
             </svg>
           )}
           Continue with Google
