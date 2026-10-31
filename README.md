@@ -1,234 +1,400 @@
+ 
 <p align="center">
-  <img src="public/UtsavZeroLogo.png" alt="UtsavZero Logo" width="180">
+  <img src="public/UtsavZeroLogo.png" alt="UtsavZero Logo" width="200"/>
 </p>
 
 <h1 align="center">UtsavZero</h1>
-<p align="center"><strong>Celebrate Together. Breathe Better. Choose UtsavZero.</strong></p>
-<p align="center">A map-based celebration discovery and civic event-planning prototype for Delhi.</p>
+
+<p align="center">
+  <strong>Discover cleaner celebrations. Plan smarter communities.</strong>
+</p>
+
+<p align="center">
+  A Community Celebrations & Environmental Intelligence Platform
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Status-MVP%20Development-orange" alt="Project Status"/>
+  <img src="https://img.shields.io/badge/Platform-Web-blue" alt="Platform"/>
+  <img src="https://img.shields.io/badge/Frontend-Next.js-black" alt="Frontend"/>
+  <img src="https://img.shields.io/badge/Database-Supabase-green" alt="Database"/>
+  <img src="https://img.shields.io/badge/Challenge-DTU%20SEVA%20FIRST-purple" alt="Challenge"/>
+</p>
 
 ---
 
-## Overview
+## 1. Overview
 
-UtsavZero is a technology-driven platform being developed as part of the **DTU SEVA innovation challenge**. It aims to make organised, cleaner community celebrations easier to discover and attend, while providing a geospatial planning workflow for a simulated government-authorised event programme.
+**UtsavZero** is a community celebration and environmental intelligence platform designed to encourage cleaner, more organised, and environmentally responsible celebrations.
 
-The platform connects three groups through one shared system:
+Festivals and community events bring people together, but unorganised celebrations can create challenges such as air and noise pollution, overcrowding, poor event coordination, and limited public awareness of cleaner alternatives.
 
-1. **Citizens** discover events, register and access digital tickets.
-2. **Private organisers** create and manage firecracker-free community events.
-3. **Government-authorised organisers** use a restricted Civic Intelligence Portal to assess proposed zones and manage simulated public-display events.
+UtsavZero aims to address these challenges through a unified digital platform where residents can discover community celebrations, organisers can host and manage events, and civic administrators can explore simulated planning and environmental monitoring workflows.
 
-The prototype is designed to demonstrate how event discovery, organiser workflows and location intelligence could work together. It does **not** grant legal permission, certify a location as safe, or represent an official government system.
+The platform brings together event discovery, organiser management, digital registrations, location-based event exploration, and a proposed civic intelligence system.
 
-## The problem
+## 2. Problem Statement
 
-During Diwali, residents may find it difficult to discover organised community celebrations and convenient cleaner alternatives. Event information can be scattered across social media, local groups and separate booking channels.
+Community celebrations are often organised through disconnected channels such as social media groups, posters, messaging applications, and local announcements.
 
-At the same time, planning a large public event requires more than selecting a venue. Planners need to consider location, access, expected attendance, capacity, nearby sensitive places and operational constraints.
+This creates several problems:
 
-UtsavZero explores a shared digital platform that brings event discovery and structured location assessment into one workflow.
+- **Fragmented information:** Residents struggle to find reliable information about nearby community events.
+- **Unorganised event management:** Organisers lack a centralised platform to publish and manage events.
+- **Limited accessibility:** People may not know about cleaner, firecracker-free alternatives happening in their locality.
+- **Coordination challenges:** Event capacity, registrations, venue information, and attendance are difficult to manage consistently.
+- **Limited planning visibility:** There is no unified interface in this project for exploring proposed community-event zones and environmental indicators.
 
-## Our solution
+UtsavZero proposes a single platform that connects residents, event organisers, and civic planning workflows.
 
-UtsavZero has two connected experiences backed by a common data layer.
+## 3. Our Solution
 
-### 1. Citizen platform
+UtsavZero provides three interconnected experiences:
 
-- Discover events through an interactive map and event listings.
-- Browse event details, timings, venue and organiser information.
-- Register for events and view booking confirmations.
-- Access digital tickets with QR codes.
-- Explore public firecracker-free events and, in the prototype demonstration, clearly labelled simulated authorised-display events.
-- View transparent event and environmental information where supporting data is available.
+### A. Public Portal — For Residents
 
-### 2. Private organiser portal
+Residents can discover and explore community celebrations through a centralised interface.
 
-Private organisers can:
+Key capabilities:
+- Browse available community events.
+- Explore events using map and list views.
+- Search and filter events by category and locality.
+- View event details, venue, schedule, and available capacity.
+- Register for supported events.
+- Access digital registration tickets and QR codes.
+- Explore organised firecracker-free celebrations.
 
-- Create firecracker-free cultural and community events.
-- Add venue, date, time, capacity, description and ticket information.
-- Manage event listings and registrations.
-- Review attendee information for their own events.
+### B. Organiser Portal — For Event Hosts
 
-Private organisers cannot create or approve government-authorised firecracker displays.
+The organiser portal provides an interface for creating and managing community events.
 
-### 3. Government-authorised organiser portal
+Key capabilities:
+- Organiser authentication.
+- Organiser dashboard.
+- Create and publish events.
+- Save event drafts.
+- Add event descriptions, categories, venues, dates, and capacity.
+- Upload event images.
+- View and manage created events.
+- Track event publication status.
 
-This restricted portal represents a **simulated civic planning workflow** operated by the UtsavZero team for the prototype.
+UtsavZero distinguishes between two proposed organiser categories:
 
-It is intended to demonstrate how an authorised authority could:
+**Private Organisers**
+- Community groups, societies, clubs, and private event organisers.
+- Can host and publish eligible community celebrations.
+- Events promoted through the public discovery portal are intended to focus on firecracker-free celebrations.
 
-- View a map of proposed event locations and planning zones.
-- Select or draw a proposed zone.
-- Review location context and available geographic information.
-- Check spatial overlap and proximity to mapped sensitive locations.
-- Review access, capacity and missing-data indicators.
-- Record a human review decision.
-- Publish an approved *simulated* event to the citizen platform.
-- Monitor registrations and attendance as separate metrics.
+**Government-Authorised Organisers (Simulated)**
+- A proposed restricted organiser category for demonstrating civic event-planning workflows.
+- Can simulate the creation of proposed event zones and controlled planning scenarios.
+- In the prototype, the development team may act as the simulated authority.
+- These workflows are demonstrations only and do not grant legal permissions or represent an actual government system.
 
-A geospatial suitability indicator is decision support only. It is not a safety certificate, legal clearance or substitute for expert assessment and statutory approvals.
+### C. Civic Intelligence Portal — For Administrators
 
-## User roles and permissions
+The proposed Civic Intelligence Portal explores how location-based planning and environmental indicators could support better-organised community celebrations.
 
-| Capability | Citizen | Private organiser | Government-authorised organiser |
-|---|:---:|:---:|:---:|
-| Browse public events | Yes | Yes | Yes |
-| Register/book events | Yes | As attendee | As attendee |
-| Create firecracker-free events | No | Yes | Yes, if configured |
-| Manage own event registrations | No | Yes | Yes |
-| Propose planning zones | No | No | Yes |
-| Review geospatial indicators | No | No | Yes |
-| Approve simulated public-display events | No | No | Yes |
-| Publish simulated authorised events | No | No | Yes |
+Planned capabilities:
+- Locality-based event planning.
+- Map-based zone visualisation.
+- Simulated event-zone proposals.
+- Review and status management for proposals.
+- Community-event distribution insights.
+- Environmental indicator dashboards.
+- Scenario-based comparisons and visual reports.
 
-Role assignment and permissions will ultimately be enforced by the backend, not merely hidden or shown in the frontend.
+**Important:** Civic workflows and environmental scenarios are prototype simulations. They must not be interpreted as official government approvals, measured pollution reductions, or live environmental monitoring.
 
-## Demonstration workflow
+## 4. Core Features
 
-1. A government-authorised organiser signs in to the Civic Intelligence Portal.
-2. The organiser selects a proposed area or draws a planning zone on the map.
-3. The system displays available geographic context, overlap checks, proximity indicators and missing information.
-4. The organiser reviews the results and records a simulated decision.
-5. The simulated approved event is published to the shared event catalogue.
-6. Citizens can discover the event, view its details and register.
-7. The organiser can monitor registrations and attendance separately.
-
-**Important legal and safety boundary:** Delhi's current restrictions on firecrackers must be respected. Any firecracker-display workflow in this student prototype is a policy/planning simulation only. It must not be used to organise, advertise as legally permitted, or conduct a real display. A real-world deployment would require confirmation of applicable law, permissions and competent-authority decisions.
-
-## Current implementation
-
-The uploaded codebase currently contains:
-
-- Next.js App Router application using React and TypeScript.
-- Responsive homepage and shared navigation/footer.
-- Light/dark theme context.
-- Event discovery page with search and category filters.
-- Leaflet-based interactive event map.
-- Event details pages.
-- Booking form and review flow.
-- Digital ticket and QR-code presentation.
-- PDF ticket download.
-- Eight sample events in local mock data.
-
-### Current limitations
-
-The current implementation is an early frontend prototype. The following are not yet implemented as production backend capabilities:
-
-- Supabase authentication and role-based access control.
-- Persistent database-backed events and bookings.
-- Private organiser dashboard.
-- Government-authorised organiser portal.
-- Zone drawing and geospatial analysis.
-- Server-side QR ticket validation and check-in.
-- Atomic capacity reservation and duplicate-booking protection.
-- Verified attendance reporting.
-- Live AQI or validated environmental-impact calculations.
-
-The Impact page exists in the application, but its dashboard functionality is not yet implemented. Sample event data and client-side booking flows should be treated as demonstrations, not live operational records.
-
-## Technology stack
-
-| Layer | Current / planned technology |
+| Feature | Description |
 |---|---|
-| Frontend | Next.js, React, TypeScript |
-| Styling | Tailwind CSS |
-| Maps | Leaflet, React Leaflet, OpenStreetMap |
-| Icons | Lucide React |
-| QR tickets | qrcode.react |
-| PDF tickets | jsPDF, html2canvas-pro |
-| Backend (planned) | Supabase |
-| Database (planned) | PostgreSQL; PostGIS if available |
-| Geospatial analysis (planned) | Turf.js and/or PostGIS |
-| Charts (planned) | Recharts |
-| Deployment (planned) | Vercel or equivalent |
+| Event Discovery | Browse and discover community celebrations. |
+| Interactive Map | Explore event locations geographically. |
+| Search & Filters | Find events by category and locality. |
+| Event Details | View event information, venue, timing, and capacity. |
+| Organiser Dashboard | Manage events through an organiser interface. |
+| Event Creation | Create events with descriptions, images, and schedules. |
+| Event Registration | Register for supported community events. |
+| Digital Tickets | Generate registration tickets and QR codes. |
+| Civic Planning | Demonstrate proposed locality and zone workflows. |
+| Environmental Dashboard | Explore simulated environmental indicators. |
+| Theme Support | Switch between light and dark themes. |
+| Responsive Interface | Support desktop and mobile screen sizes. |
 
-The current dependencies are defined in `package.json`. Planned technologies are not yet installed or integrated unless stated above.
+*Feature availability depends on the current implementation. See the development status below.*
 
-## Getting started
+## 5. Technology Stack
+
+### Frontend
+
+- **Next.js** — React framework and application routing.
+- **React** — Component-based user interface.
+- **TypeScript** — Type-safe application development.
+- **Tailwind CSS** — Utility-first styling.
+- **Lucide React** — Interface icons.
+
+### Backend & Database
+
+- **Supabase** — Backend platform.
+- **PostgreSQL** — Relational database.
+- **Supabase Auth** — User authentication.
+- **Supabase Storage** — File and image storage, where configured.
+- **Supabase Row Level Security (RLS)** — Database access control.
+
+### Maps & Location
+
+- **Leaflet** — Interactive maps.
+- **React Leaflet** — React integration for Leaflet.
+- **OpenStreetMap** — Map tile and geographic visualisation source.
+
+### Tickets & Export
+
+- **qrcode.react** — QR code generation.
+- **jsPDF** — PDF generation.
+- **html2canvas-pro** — Capturing interface content for export.
+
+## 6. Application Architecture
+
+UtsavZero follows a modular application structure.
+
+```text
+UtsavZero/
+│
+├── public/
+│   └── UtsavZeroLogo.png
+│
+├── src/
+│   ├── app/
+│   │   ├── (public)/
+│   │   ├── (auth)/
+│   │   ├── hostevents/
+│   │   └── ...
+│   │
+│   ├── components/
+│   │   ├── hostevents/
+│   │   │   ├── layout/
+│   │   │   └── organize/
+│   │   └── ...
+│   │
+│   ├── context/
+│   │
+│   ├── lib/
+│   │   └── supabase/
+│   │       └── client.ts
+│   │
+│   ├── services/
+│   │   └── hostevents/
+│   │       └── eventService.ts
+│   │
+│   └── ...
+│
+├── .env.local
+├── package.json
+└── README.md
+```
+
+*This is a high-level architectural illustration. Actual folders and routes may differ as development progresses.*
+
+## 7. Authentication & Data Management
+
+Supabase is used as the backend foundation for authentication and database operations.
+
+The application is designed around separate user experiences:
+
+- Residents access the public event discovery experience.
+- Organisers access event creation and management features.
+- Civic administration features are intended to be restricted and simulated for the prototype.
+
+The organiser event workflow uses the authenticated Supabase user to associate created events with their organiser account.
+
+Database access should be protected through appropriate Row Level Security policies. Users should only be able to access or modify records permitted by their role and ownership.
+
+## 8. Development Status
+
+UtsavZero is currently under MVP development.
+
+The following status distinguishes reported working functionality from planned work.
+
+### Implemented / Reported Working
+
+- [x] Next.js application foundation.
+- [x] Responsive public-facing interface.
+- [x] Light and dark theme support.
+- [x] Event discovery interface.
+- [x] Search and category filtering.
+- [x] Map and list-based event exploration.
+- [x] Event details interface.
+- [x] Supabase authentication setup.
+- [x] Organiser dashboard interface.
+- [x] Event creation workflow.
+- [x] Organiser event listing and refresh after creation.
+- [x] Demo registration and ticket interface.
+- [x] QR code generation for demo tickets.
+- [x] PDF ticket export.
+
+### In Progress / Requires Final Verification
+
+- [ ] Verify event draft and publish persistence.
+- [ ] Verify database schema and organiser ownership policies.
+- [ ] Persist event coordinates from map-based location selection.
+- [ ] Connect public discovery to published Supabase events.
+- [ ] Persist resident registrations in the database.
+- [ ] Implement a reliable My Tickets experience.
+- [ ] Validate capacity and duplicate registrations.
+- [ ] Complete end-to-end testing across resident and organiser flows.
+
+### Planned
+
+- [ ] Secure QR ticket verification.
+- [ ] Attendance and check-in management.
+- [ ] Restricted simulated civic administration portal.
+- [ ] Interactive locality and planning-zone workflows.
+- [ ] Environmental intelligence dashboard.
+- [ ] Scenario-based environmental impact indicators.
+- [ ] Integration with suitable public environmental datasets.
+- [ ] Advanced geospatial analysis.
+
+## 9. Environmental Responsibility
+
+Environmental responsibility is a central principle of UtsavZero.
+
+The platform promotes organised, firecracker-free community celebrations and aims to make cleaner alternatives easier to discover.
+
+The proposed environmental intelligence module may explore indicators such as:
+
+- Event distribution across localities.
+- Participation in organised community celebrations.
+- Hypothetical pollution scenarios.
+- Estimated environmental impact under clearly defined assumptions.
+
+Any estimates must be labelled as estimates or simulations. They are not direct measurements of pollution avoided or proof of changes in air quality.
+
+Future integrations with public environmental data sources may support more informed environmental analysis.
+
+## 10. Installation & Local Development
 
 ### Prerequisites
 
-- Node.js (use a current LTS release)
-- npm
+Make sure you have:
 
-### Installation
+- Node.js installed.
+- npm installed.
+- Git installed.
+- A Supabase project for backend functionality.
+
+### Clone the repository
 
 ```bash
-git clone <your-repository-url>
-cd <repository-folder>
+git clone https://github.com/Shreeyanshsahu/UtsavZero.git
+
+cd UtsavZero
+```
+
+### Install dependencies
+
+```bash
 npm install
+```
+
+### Configure environment variables
+
+Create a `.env.local` file in the project root.
+
+Add the Supabase credentials required by the application:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+Use the exact environment variable names expected by your Supabase client configuration. Never commit secret service-role keys or other private credentials.
+
+### Run the development server
+
+```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### Available scripts
-
-```bash
-npm run dev     # Start local development server
-npm run build   # Create production build
-npm run start   # Run production server
-npm run lint    # Run ESLint
-```
-
-## Project structure
+Open the application at:
 
 ```text
-src/
-├── app/
-│   ├── about/
-│   ├── booking/[bookingId]/confirmation/
-│   ├── events/
-│   │   ├── [eventId]/
-│   │   │   └── book/
-│   │   └── page.tsx
-│   ├── impact/
-│   ├── globals.css
-│   ├── layout.tsx
-│   └── page.tsx
-├── components/
-│   ├── Events/
-│   │   ├── Booking/
-│   │   ├── Details/
-│   │   ├── Discovery/
-│   │   └── Ticket/
-│   ├── HomeContent/
-│   ├── layout/
-│   └── ui/
-├── context/
-├── data/
-├── hooks/
-├── types/
-└── utils/
+http://localhost:3000
 ```
 
-## Development roadmap
+### Build for production
 
-1. **Backend foundation:** database schema, authentication and secure role permissions.
-2. **Citizen experience:** persistent events, bookings, saved events and ticket validation.
-3. **Private organiser experience:** event creation, editing and registration management.
-4. **Civic Intelligence Portal:** restricted dashboard, map layers, proposed zones and review workflow.
-5. **Geospatial intelligence:** spatial checks, sensitive-location proximity indicators, capacity/access review and explainable outputs.
-6. **Integrated demonstration:** simulated approval, publication to the citizen map, registration and attendance reporting.
+```bash
+npm run build
+```
 
-## Impact measurement principles
+## 11. Project Objectives
 
-UtsavZero will not claim a specific reduction in Delhi's pollution or AQI without suitable measurements and a defensible methodology.
+The primary objectives of UtsavZero are:
 
-- Registrations, expected attendance and verified attendance will be reported separately.
-- Environmental estimates will disclose their assumptions, data sources and emission factors.
-- A change in event attendance or activity is not automatically proof of an equivalent change in ambient AQI.
-- A dashboard should distinguish measured values, estimates and illustrative scenarios.
+1. Make community celebrations easier to discover.
+2. Encourage participation in organised, firecracker-free events.
+3. Provide organisers with a centralised event-management platform.
+4. Improve visibility of event locations and schedules.
+5. Demonstrate how geospatial planning interfaces could support civic decision-making.
+6. Explore environmental indicators that can inform more responsible community celebrations.
 
-## Mission
+## 12. Future Scope
 
-To make organised, cleaner celebrations easier to discover and participate in, while exploring how transparent location intelligence can support better-informed public event planning.
+UtsavZero can be extended into a broader community-event and civic-planning ecosystem.
 
-## Team
+Potential future improvements include:
 
-Developed by a student team as part of the **DTU SEVA innovation challenge**.
+- Verified organiser accounts and role-based permissions.
+- Real-time event capacity and registration management.
+- Secure QR-based event check-in.
+- Advanced geospatial analysis using PostGIS.
+- Locality-level event planning and analytics.
+- Integration with verified public environmental datasets.
+- Accessibility improvements and multilingual support.
+- Analytics for organisers and community administrators.
+
+## 13. Important Disclaimer
+
+UtsavZero is an independent prototype developed for demonstration and innovation purposes.
+
+It is not an official government platform, does not issue legal permissions, and does not authorise the use of firecrackers.
+
+Any government-authorised organiser workflow, event-zone proposal, civic approval, or environmental impact dashboard shown in the prototype is simulated unless explicitly connected to a verified official source.
+
+The platform's public event discovery concept focuses on organised, firecracker-free celebrations.
+
+## 14. Team
+
+**Project:** UtsavZero
+
+**Institution:** Delhi Technological University (DTU)
+
+**Challenge:** SEVA FIRST Innovation Challenge 2026
+
+| Role | Responsibility |
+|---|---|
+| Project Lead & MVP Developer | Product architecture, frontend and backend development, integration, and MVP delivery. |
+| Research & Documentation | Problem research, user needs, domain research, and documentation. |
+| Testing & Validation | Feature testing, workflow validation, usability feedback, and issue reporting. |
+
+## 15. Contributing
+
+This project is currently being developed as an MVP for the DTU SEVA FIRST Innovation Challenge 2026.
+
+Suggestions, feedback, and ideas for improving community-event organisation and environmental awareness are welcome.
+
+## 16. Project Repository
+
+GitHub: https://github.com/Shreeyanshsahu/UtsavZero
 
 ---
 
-<p align="center"><strong>UtsavZero — Celebrate Together. Breathe Better. Choose UtsavZero. 🌿</strong></p>
+<p align="center">
+  <strong>UtsavZero — Celebrate Together. Celebrate Responsibly.</strong>
+</p>
+
+<p align="center">
+  Building cleaner celebrations and smarter communities.
+</p>
