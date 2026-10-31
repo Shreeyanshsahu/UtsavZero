@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   CalendarPlus,
   ShieldCheck,
+  UserRound,
 } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
@@ -52,9 +53,9 @@ export default function RoleNavigation({
     : isCitizen
     ? [
         {
-          label: "Dashboard",
-          href: "/dashboard",
-          icon: LayoutDashboard,
+          label: "Profile",
+          href: "/profile",
+          icon: UserRound,
         },
       ]
     : [];

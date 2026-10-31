@@ -6,7 +6,6 @@ import { useAuth } from "@/context/AuthContext";
 
 import NavbarLogo from "./navbar/NavbarLogo";
 import RoleNavigation from "./navbar/RoleNavigation";
-import ProfileButton from "./navbar/ProfileButton";
 import LogoutButton from "./navbar/LogoutButton";
 import ThemeToggle from "./navbar/ThemeToggle";
 import MobileNavigation from "./navbar/MobileNavigation";
@@ -72,7 +71,7 @@ export default function Navbar({
   ];
 
   return (
-   <header className="sticky top-0 z-50 w-full px-2 py-2 sm:px-6 sm:py-3">
+    <header className="sticky top-0 z-50 w-full px-2 py-2 sm:px-6 sm:py-3">
       <nav
         className={`
           mx-auto flex h-[68px] max-w-7xl items-center justify-between
@@ -121,10 +120,6 @@ export default function Navbar({
                 }`}
               />
 
-              <ProfileButton
-                href={profileHref}
-                isDarkMode={isDarkMode}
-              />
 
               <LogoutButton isDarkMode={isDarkMode} />
             </>

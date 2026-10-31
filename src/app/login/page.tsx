@@ -1,13 +1,13 @@
 
 "use client";
-import { useSearchParams } from "next/navigation";
-import { useState, type FormEvent } from "react";
+
+import { Suspense, useState, type FormEvent } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Mail, Lock, Loader2 } from "lucide-react";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const { signIn, signInWithGoogle } = useAuth();
 
@@ -16,18 +16,19 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
+
   const searchParams = useSearchParams();
 
   const getRedirectPath = () => {
     const next = searchParams.get("next");
 
-    // Prevent external redirects and malformed paths.
     if (!next || !next.startsWith("/") || next.startsWith("//")) {
       return "/";
     }
 
     return next;
   };
+
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
@@ -60,7 +61,6 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-[calc(100vh-68px)] items-center justify-center bg-[#FFF8EB] px-4 py-12">
       <div className="w-full max-w-md rounded-3xl border border-[#EADCC9] bg-white p-7 shadow-xl sm:p-9">
-
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-[#38231C]">
             Welcome Back!
@@ -91,7 +91,9 @@ export default function LoginPage() {
 
         <div className="my-6 flex items-center gap-4">
           <div className="h-px flex-1 bg-[#EADCC9]" />
-          <span className="text-xs text-[#806B5D]">OR CONTINUE WITH EMAIL</span>
+          <span className="text-xs text-[#806B5D]">
+            OR CONTINUE WITH EMAIL
+          </span>
           <div className="h-px flex-1 bg-[#EADCC9]" />
         </div>
 
@@ -158,5 +160,19 @@ export default function LoginPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-[calc(100vh-68px)] items-center justify-center bg-[#FFF8EB]">
+          <Loader2 className="animate-spin text-[#F0440A]" size={28} />
+        </main>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }
