@@ -22,6 +22,7 @@ export interface CreateEventInput {
   coverImageKey?: string | null;
   latitude: number | null;
   longitude: number | null;
+  ticketPrice: number;
 }
 
 export async function fetchLocalities(): Promise<Locality[]> {
@@ -96,6 +97,13 @@ export async function createEvent(input: CreateEventInput) {
   ) {
     throw new Error("Please select valid geographic coordinates.");
   }
+  if (
+  !Number.isFinite(input.ticketPrice) ||
+  input.ticketPrice < 0 ||
+  input.ticketPrice > 99999999.99
+) {
+  throw new Error("Please enter a valid event ticket price.");
+}
   const { data, error } = await supabase
     .from("events")
     .insert({
@@ -110,6 +118,7 @@ export async function createEvent(input: CreateEventInput) {
       starts_at: startsAt.toISOString(),
       ends_at: endsAt.toISOString(),
       capacity: input.capacity,
+      ticket_price: input.ticketPrice,
       status: input.status,
       is_firecracker_free: true,
       cover_image_key: input.coverImageKey ?? null,

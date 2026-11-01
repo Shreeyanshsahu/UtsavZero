@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useTheme } from "@/context/ThemeContext";
 import Navbar from "@/components/layout/Navbar";
@@ -11,26 +11,62 @@ import EventList from "@/components/Events/Discovery/EventList";
 import EventSearchBar from "@/components/Events/Discovery/EventSearchBar";
 import EventCategoryFilter from "@/components/Events/Discovery/EventCategoryFilter";
 
-import { mockEvents } from "@/data/mockEvents";
+import { fetchPublicEvents } from "@/services/events/publicEventService";
+import type { Event } from "@/types/event";
 
 export default function Events() {
   const { isDarkMode, setIsDarkMode } = useTheme();
 
-  // Search and filter states
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] =
     useState("All Events");
 
-  // Shared selection state for EventList and EventMap
   const [selectedEventId, setSelectedEventId] =
     useState<string | null>(null);
 
-  // Filter events based on search and selected category
+  useEffect(() => {
+    let active = true;
+
+    async function loadEvents() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const result = await fetchPublicEvents();
+
+        if (active) {
+          setEvents(result);
+        }
+      } catch (err) {
+        if (active) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Unable to load celebrations."
+          );
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadEvents();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const filteredEvents = useMemo(() => {
-    return mockEvents.filter((event) => {
+    return events.filter((event) => {
       const query = searchQuery.trim().toLowerCase();
 
-      // Search across event information
       const matchesSearch =
         !query ||
         event.title.toLowerCase().includes(query) ||
@@ -39,7 +75,6 @@ export default function Events() {
         event.address.toLowerCase().includes(query) ||
         event.city.toLowerCase().includes(query);
 
-      // Category filtering
       const categories = event.category.map((category) =>
         category.toLowerCase()
       );
@@ -67,7 +102,26 @@ export default function Events() {
 
       return matchesSearch && matchesCategory;
     });
-  }, [searchQuery, selectedCategory]);
+  }, [events, searchQuery, selectedCategory]);
+
+  const eventsWithCoordinates = filteredEvents.filter(
+    (
+      event
+    ): event is Event & {
+      latitude: number;
+      longitude: number;
+    } =>
+      event.latitude !== null &&
+      event.longitude !== null &&
+      Number.isFinite(event.latitude) &&
+      Number.isFinite(event.longitude)
+  );
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setSelectedCategory("All Events");
+    setSelectedEventId(null);
+  };
 
   return (
     <div
@@ -81,19 +135,18 @@ export default function Events() {
         }
       `}
     >
-      {/* Navbar */}
       <Navbar
         isDarkMode={isDarkMode}
         setIsDarkMode={setIsDarkMode}
       />
 
-      <main className="
-        mx-auto w-full max-w-[1440px]
-        px-4 pb-10 pt-8
-        sm:px-6 lg:px-10
-      ">
-
-        {/* Page Heading */}
+      <main
+        className="
+          mx-auto w-full max-w-[1440px]
+          px-4 pb-10 pt-8
+          sm:px-6 lg:px-10
+        "
+      >
         <div className="mb-6">
           <h1 className="font-lora text-2xl font-bold sm:text-3xl">
             Discover Celebrations
@@ -104,7 +157,6 @@ export default function Events() {
           </p>
         </div>
 
-        {/* Search Bar */}
         <div className="mb-5">
           <EventSearchBar
             searchQuery={searchQuery}
@@ -112,7 +164,6 @@ export default function Events() {
           />
         </div>
 
-        {/* Category Filters */}
         <div className="mb-6">
           <EventCategoryFilter
             selectedCategory={selectedCategory}
@@ -120,55 +171,96 @@ export default function Events() {
           />
         </div>
 
-        {/* Results Count */}
-        <div className="mb-4 flex items-center justify-between">
-          <p className="text-sm font-medium opacity-80">
-            {filteredEvents.length} celebrations found
-          </p>
+        {loading ? (
+          <div className="flex min-h-[350px] items-center justify-center">
+            <p className="text-sm opacity-70">
+              Loading celebrations from UtsavZero...
+            </p>
+          </div>
+        ) : error ? (
+          <div
+            className="rounded-2xl border border-red-300 bg-red-50 p-6 text-center"
+            role="alert"
+          >
+            <p className="font-semibold text-red-700">
+              Unable to load celebrations
+            </p>
 
-          {(searchQuery || selectedCategory !== "All Events") && (
+            <p className="mt-2 text-sm text-red-600">
+              {error}
+            </p>
+
             <button
-              onClick={() => {
-                setSearchQuery("");
-                setSelectedCategory("All Events");
-                setSelectedEventId(null);
-              }}
-              className="text-sm font-semibold text-[#F0440A] hover:underline"
+              type="button"
+              onClick={() => window.location.reload()}
+              className="mt-4 rounded-full bg-[#F0440A] px-5 py-2 text-sm font-semibold text-white"
             >
-              Clear filters
+              Try Again
             </button>
-          )}
-        </div>
+          </div>
+        ) : (
+          <>
+            <div className="mb-4 flex items-center justify-between">
+              <p className="text-sm font-medium opacity-80">
+                {filteredEvents.length} celebrations found
+              </p>
 
-        {/* Event List + Map */}
-        <div className="
-          grid grid-cols-1 gap-6
-          lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]
-          lg:items-start
-        ">
+              {(searchQuery ||
+                selectedCategory !== "All Events") && (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="text-sm font-semibold text-[#F0440A] hover:underline"
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
 
-          {/* Event List */}
-          <section className="min-w-0">
-            <EventList
-              events={filteredEvents}
-              selectedEventId={selectedEventId}
-              onEventSelect={setSelectedEventId}
-            />
-          </section>
+            <div
+              className="
+                grid grid-cols-1 gap-6
+                lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]
+                lg:items-start
+              "
+            >
+              <section className="min-w-0">
+                <EventList
+                  events={filteredEvents}
+                  selectedEventId={selectedEventId}
+                  onEventSelect={setSelectedEventId}
+                />
+              </section>
 
-          {/* Interactive Map */}
-          <section className="
-            h-[450px] w-full overflow-hidden rounded-2xl
-            sm:h-[550px] lg:sticky lg:top-6 lg:h-[650px]
-          ">
-            <EventMap
-              events={filteredEvents}
-              selectedEventId={selectedEventId}
-              onEventSelect={setSelectedEventId}
-            />
-          </section>
+              <section
+                className="
+                  h-[450px] w-full overflow-hidden rounded-2xl
+                  sm:h-[550px] lg:sticky lg:top-6 lg:h-[650px]
+                "
+              >
+                <EventMap
+                  events={eventsWithCoordinates}
+                  selectedEventId={
+                    eventsWithCoordinates.some(
+                      (event) => event.id === selectedEventId
+                    )
+                      ? selectedEventId
+                      : null
+                  }
+                  onEventSelect={setSelectedEventId}
+                />
+              </section>
+            </div>
 
-        </div>
+            {filteredEvents.length > 0 &&
+              eventsWithCoordinates.length < filteredEvents.length && (
+                <p className="mt-4 text-xs opacity-60">
+                  Some celebrations do not have map coordinates yet and
+                  are shown in the event list only.
+                </p>
+              )}
+          </>
+        )}
       </main>
     </div>
   );

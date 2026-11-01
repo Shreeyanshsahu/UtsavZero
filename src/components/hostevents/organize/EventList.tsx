@@ -26,6 +26,7 @@ interface OrganizerEvent {
   capacity: number;
   reserved_count: number;
   status: EventStatus;
+  ticket_price: number;
 }
 
 type FilterType = "all" | EventStatus;
@@ -69,7 +70,7 @@ export default function EventList({
       const { data, error: fetchError } = await supabase
         .from("events")
         .select(
-          "id, title, category, venue_name, address, starts_at, ends_at, capacity, reserved_count, status"
+          "id, title, category, venue_name, address, starts_at, ends_at, capacity, reserved_count, ticket_price, status"
         )
         .eq("organizer_id", user.id)
         .order("created_at", { ascending: false });
@@ -85,57 +86,57 @@ export default function EventList({
       setLoading(false);
     }
   }, []);
-useEffect(() => {
-  let active = true;
+  useEffect(() => {
+    let active = true;
 
-  const loadEvents = async () => {
-    try {
-      setLoading(true);
-      setError("");
+    const loadEvents = async () => {
+      try {
+        setLoading(true);
+        setError("");
 
-      const supabase = createClient();
+        const supabase = createClient();
 
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser();
 
-      if (authError || !user) {
-        throw new Error("Please log in to view your events.");
+        if (authError || !user) {
+          throw new Error("Please log in to view your events.");
+        }
+
+        const { data, error: fetchError } = await supabase
+          .from("events")
+          .select(
+            "id, title, category, venue_name, address, starts_at, ends_at, capacity, reserved_count, ticket_price, status"
+          )
+          .eq("organizer_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (fetchError) throw fetchError;
+
+        if (active) {
+          setEvents((data ?? []) as OrganizerEvent[]);
+        }
+      } catch (err) {
+        if (active) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Unable to load your events."
+          );
+        }
+      } finally {
+        if (active) setLoading(false);
       }
+    };
 
-      const { data, error: fetchError } = await supabase
-        .from("events")
-        .select(
-          "id, title, category, venue_name, address, starts_at, ends_at, capacity, reserved_count, status"
-        )
-        .eq("organizer_id", user.id)
-        .order("created_at", { ascending: false });
+    loadEvents();
 
-      if (fetchError) throw fetchError;
-
-      if (active) {
-        setEvents((data ?? []) as OrganizerEvent[]);
-      }
-    } catch (err) {
-      if (active) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Unable to load your events."
-        );
-      }
-    } finally {
-      if (active) setLoading(false);
-    }
-  };
-
-  loadEvents();
-
-  return () => {
-    active = false;
-  };
-}, [refreshKey]);
+    return () => {
+      active = false;
+    };
+  }, [refreshKey]);
   const filteredEvents =
     activeFilter === "all"
       ? events
@@ -153,7 +154,15 @@ useEffect(() => {
       hour: "numeric",
       minute: "2-digit",
     });
+  const formatPrice = (price: number) => {
+    if (price === 0) return "Free";
 
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 2,
+    }).format(price);
+  };
   const statusStyles: Record<EventStatus, string> = {
     published: isDarkMode
       ? "bg-emerald-950/50 text-emerald-300"
@@ -232,11 +241,10 @@ useEffect(() => {
               key={filter.value}
               type="button"
               onClick={() => setActiveFilter(filter.value)}
-              className={`shrink-0 rounded-full border px-4 py-2 text-xs font-semibold transition ${
-                selected
-                  ? "border-[#F0440A] bg-[#F0440A] text-white"
-                  : buttonClass
-              }`}
+              className={`shrink-0 rounded-full border px-4 py-2 text-xs font-semibold transition ${selected
+                ? "border-[#F0440A] bg-[#F0440A] text-white"
+                : buttonClass
+                }`}
             >
               {filter.label}
               {filter.value === "all" && (
@@ -263,11 +271,10 @@ useEffect(() => {
       {/* Error */}
       {!loading && error && (
         <div
-          className={`rounded-2xl border border-red-300 p-5 text-sm ${
-            isDarkMode
-              ? "bg-red-950/30 text-red-300"
-              : "bg-red-50 text-red-700"
-          }`}
+          className={`rounded-2xl border border-red-300 p-5 text-sm ${isDarkMode
+            ? "bg-red-950/30 text-red-300"
+            : "bg-red-50 text-red-700"
+            }`}
         >
           <p>{error}</p>
           <button
@@ -322,9 +329,9 @@ useEffect(() => {
           const percentage =
             event.capacity > 0
               ? Math.min(
-                  100,
-                  (event.reserved_count / event.capacity) * 100
-                )
+                100,
+                (event.reserved_count / event.capacity) * 100
+              )
               : 0;
 
           return (
@@ -362,14 +369,28 @@ useEffect(() => {
                   </div>
                 </div>
 
-                <span
-                  className={`rounded-full px-3 py-1.5 text-xs font-bold capitalize ${
-                    statusStyles[event.status] ??
-                    statusStyles.draft
-                  }`}
-                >
-                  {event.status}
-                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={`rounded-full px-3 py-1.5 text-xs font-bold ${event.ticket_price === 0
+                      ? isDarkMode
+                        ? "bg-emerald-950/50 text-emerald-300"
+                        : "bg-emerald-50 text-emerald-700"
+                      : isDarkMode
+                        ? "bg-orange-950/50 text-orange-300"
+                        : "bg-orange-50 text-orange-700"
+                      }`}
+                  >
+                    {formatPrice(Number(event.ticket_price))}
+                  </span>
+
+                  <span
+                    className={`rounded-full px-3 py-1.5 text-xs font-bold capitalize ${statusStyles[event.status] ??
+                      statusStyles.draft
+                      }`}
+                  >
+                    {event.status}
+                  </span>
+                </div>
               </div>
 
               {/* Registration progress */}
@@ -386,9 +407,8 @@ useEffect(() => {
                 </div>
 
                 <div
-                  className={`h-2 overflow-hidden rounded-full ${
-                    isDarkMode ? "bg-[#343B36]" : "bg-[#F2E9DC]"
-                  }`}
+                  className={`h-2 overflow-hidden rounded-full ${isDarkMode ? "bg-[#343B36]" : "bg-[#F2E9DC]"
+                    }`}
                 >
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-[#FFBE45] to-[#F0440A] transition-all"

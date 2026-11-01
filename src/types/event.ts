@@ -12,8 +12,8 @@ export interface Event {
   address: string;
   city: string;
 
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
 
   startDate: string;
   endDate: string;

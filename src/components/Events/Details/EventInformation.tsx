@@ -26,7 +26,13 @@ export default function EventInformation({
   });
 
   const priceLabel =
-    event.price === 0 ? "Free Entry" : `₹${event.price}`;
+  event.price === 0
+    ? "Free Entry"
+    : new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 2,
+      }).format(event.price);
 
   const mapQuery = encodeURIComponent(
     `${event.venue}, ${event.address}, ${event.city}`

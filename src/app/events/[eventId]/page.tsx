@@ -1,13 +1,15 @@
 
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 
 import Navbar from "@/components/layout/Navbar";
 import { useTheme } from "@/context/ThemeContext";
-import { mockEvents } from "@/data/mockEvents";
+import { fetchPublicEvent } from "@/services/events/publicEventService";
+import type { Event } from "@/types/event";
 
 import EventHero from "@/components/Events/Details/EventHero";
 import EventInformation from "@/components/Events/Details/EventInformation";
@@ -17,114 +19,142 @@ import EventGuidelines from "@/components/Events/Details/EventGuidelines";
 
 export default function EventDetailsPage() {
   const params = useParams<{ eventId: string }>();
+  const eventId = params.eventId;
 
   const { isDarkMode, setIsDarkMode } = useTheme();
 
-  // Find the selected event using its dynamic route ID.
-  const event = mockEvents.find(
-    (item) => item.id === params.eventId
+  const [event, setEvent] = useState<Event | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadEvent() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const result = await fetchPublicEvent(eventId);
+
+        if (active) {
+          setEvent(result);
+        }
+      } catch (err) {
+        if (active) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Unable to load this celebration."
+          );
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    if (eventId) loadEvent();
+
+    return () => {
+      active = false;
+    };
+  }, [eventId]);
+
+  const pageStyle = isDarkMode
+    ? "bg-[#171A19] text-[#FFF0D7]"
+    : "bg-[#FFF8EB] text-[#3D2923]";
+
+  const backLink = (
+    <Link
+      href="/events"
+      className="inline-flex items-center gap-2 text-sm font-semibold text-[#F0440A] hover:underline"
+    >
+      <ArrowLeft size={16} />
+      Back to celebrations
+    </Link>
   );
 
-  const availableSeats = event
-    ? Math.max(0, event.totalSeats - event.bookedSeats)
-    : 0;
-
-  const dark = isDarkMode;
-
-  if (!event) {
-    return (
-      <div
-        className={`min-h-screen ${
-          dark
-            ? "bg-[#171A19] text-[#FFF0D7]"
-            : "bg-[#FFF8EB] text-[#3D2923]"
-        }`}
-      >
-        <Navbar
-          isDarkMode={isDarkMode}
-          setIsDarkMode={setIsDarkMode}
-        />
-
-        <main className="mx-auto flex min-h-[60vh] max-w-5xl flex-col items-center justify-center px-5 text-center">
-          <h1 className="font-lora text-3xl font-bold">
-            Event not found
-          </h1>
-
-          <p className="mt-3 text-sm opacity-70">
-            The celebration you&apos;re looking for doesn&apos;t exist.
-          </p>
-
-          <Link
-            href="/events"
-            className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#F0440A] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#D93808]"
-          >
-            <ArrowLeft size={16} />
-            Explore celebrations
-          </Link>
-        </main>
-      </div>
-    );
-  }
-
   return (
-    <div
-      className={`min-h-screen w-full transition-colors duration-300 ${
-        dark
-          ? "bg-[#171A19] text-[#FFF0D7]"
-          : "bg-[#FFF8EB] text-[#3D2923]"
-      }`}
-    >
-      {/* Navbar */}
+    <div className={`min-h-screen ${pageStyle}`}>
       <Navbar
         isDarkMode={isDarkMode}
         setIsDarkMode={setIsDarkMode}
       />
 
-      <main className="mx-auto w-full max-w-[1440px] px-4 pb-12 pt-2 sm:px-6 lg:px-10">
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+        {loading ? (
+          <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3">
+            <Loader2 className="animate-spin text-[#F0440A]" size={32} />
+            <p className="text-sm opacity-70">
+              Loading celebration details...
+            </p>
+          </div>
+        ) : error ? (
+          <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
+            <h1 className="font-lora text-2xl font-bold">
+              Unable to load event
+            </h1>
+            <p className="mt-3 max-w-lg text-sm opacity-70">
+              {error}
+            </p>
+            <div className="mt-6">{backLink}</div>
+          </div>
+        ) : !event ? (
+          <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
+            <h1 className="font-lora text-3xl font-bold">
+              Event not found
+            </h1>
+            <p className="mt-3 text-sm opacity-70">
+              This celebration may have ended or is no longer available.
+            </p>
+            <div className="mt-6">{backLink}</div>
+          </div>
+        ) : (
+          <>
+            <div className="mb-5">{backLink}</div>
 
-        {/* Back navigation */}
-        <Link
-          href="/events"
-          className="mb-3 inline-flex items-center gap-2 text-xs font-medium text-[#927F70] transition hover:text-[#F0440A] dark:text-[#AFA99C]"
-        >
-          <ArrowLeft size={15} />
-          Back to celebrations
-        </Link>
+            <EventHero event={event} />
 
-        {/* 1. Event Hero */}
-        <EventHero event={event} />
+            <EventInformation event={event} />
 
-        {/* 2. Event Information */}
-        <EventInformation event={event} />
+            <SeatAvailability event={event} />
 
-        {/* 3. Seat Availability */}
-        <SeatAvailability event={event} />
+            <EventDescription event={event} />
 
-        {/* 4. Event Description */}
-        <EventDescription event={event} />
+            <EventGuidelines event={event} />
 
-        {/* 5. Event Guidelines */}
-        <EventGuidelines event={event} />
+            <div className="mt-8 flex flex-col gap-3 border-t border-[#EADCC9] pt-6 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-semibold">
+                  Ready to celebrate responsibly?
+                </p>
+                <p className="mt-1 text-sm opacity-70">
+                  Reserve your group entry for this firecracker-free event.
+                </p>
+              </div>
 
-        {/* Booking CTA */}
-        <section className="mt-6">
-          <Link
-            href={`/events/${event.id}/book`}
-            aria-disabled={availableSeats <= 0}
-            className={`flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#FFC34F] via-[#FF8A28] to-[#F0440A] px-6 py-3.5 text-sm font-bold text-white shadow-sm transition hover:brightness-105 hover:shadow-md ${
-              availableSeats <= 0
-                ? "pointer-events-none opacity-50"
-                : ""
-            }`}
-          >
-            {availableSeats > 0
-              ? "Reserve Your Spot"
-              : "Fully Booked"}
-
-            <ArrowRight size={17} />
-          </Link>
-        </section>
-
+              {event.totalSeats - event.bookedSeats <= 0 ? (
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-full bg-gray-400 px-6 py-3.5 text-sm font-bold text-white opacity-70"
+                >
+                  Fully Booked
+                </button>
+              ) : (
+                <Link
+                  href={`/events/${event.id}/book`}
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#F0440A] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#D93808]"
+                >
+                  Book Your Tickets
+                  <ArrowRight size={17} />
+                </Link>
+              )}
+            </div>
+          </>
+        )}
       </main>
     </div>
   );

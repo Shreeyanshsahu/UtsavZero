@@ -31,6 +31,8 @@ interface EventFormData {
   image: File | null;
   latitude: number | null;
   longitude: number | null;
+  pricingType: "free" | "paid";
+  ticketPrice: string;
 }
 interface EventFormProps {
   onEventCreated?: () => void;
@@ -48,6 +50,8 @@ const initialFormData: EventFormData = {
   image: null,
   latitude: null,
   longitude: null,
+  pricingType: "free",
+  ticketPrice: "0",
 };
 
 export default function EventForm({
@@ -203,7 +207,24 @@ export default function EventForm({
       setMessage("Please select a valid future event schedule.");
       return;
     }
+    const ticketPrice =
+      formData.pricingType === "free"
+        ? 0
+        : Number(formData.ticketPrice);
 
+    if (
+      formData.pricingType === "paid" &&
+      (
+        !formData.ticketPrice.trim() ||
+        !Number.isFinite(ticketPrice) ||
+        ticketPrice <= 0 ||
+        ticketPrice > 99999999.99
+      )
+    ) {
+      setMessageType("error");
+      setMessage("Please enter a valid ticket price greater than ₹0.");
+      return;
+    }
     if (
       !Number.isInteger(formData.capacity) ||
       formData.capacity < 1 ||
@@ -246,6 +267,7 @@ export default function EventForm({
         status,
         latitude: formData.latitude,
         longitude: formData.longitude,
+        ticketPrice,
       });
       onEventCreated?.();
       setMessageType("success");
@@ -283,21 +305,6 @@ export default function EventForm({
           onChange={handleTextChange}
         />
       </div>
-
-      <div className={`rounded-2xl border p-5 sm:p-7 ${cardClass}`}>
-        <EventLocalitySelect
-          localities={localities}
-          localityId={formData.localityId}
-          onChange={(localityId) => {
-            setFormData((previous) => ({
-              ...previous,
-              localityId,
-            }));
-            setMessage("");
-          }}
-          loading={loadingLocalities}
-        />
-      </div>
       <div className={`rounded-2xl border p-5 sm:p-7 ${cardClass}`}>
         <EventLocationPicker
           latitude={formData.latitude}
@@ -312,7 +319,128 @@ export default function EventForm({
           onChange={handleTextChange}
         />
       </div>
+      <div className={`rounded-2xl border p-5 sm:p-7 ${cardClass}`}>
+        <div className="mb-5">
+          <h3
+            className={`text-lg font-semibold ${isDarkMode ? "text-[#FFF8EB]" : "text-[#38231C]"
+              }`}
+          >
+            Event Pricing
+          </h3>
 
+          <p
+            className={`mt-1 text-sm ${isDarkMode ? "text-[#B7BDB8]" : "text-[#806B5D]"
+              }`}
+          >
+            Choose whether attendees can join for free or need to purchase a ticket.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              setFormData((previous) => ({
+                ...previous,
+                pricingType: "free",
+                ticketPrice: "0",
+              }));
+              setMessage("");
+            }}
+            className={`rounded-xl border p-4 text-left transition ${formData.pricingType === "free"
+                ? "border-[#FF8A25] bg-[#FF8A25]/10"
+                : isDarkMode
+                  ? "border-[#454B46] bg-[#202522]"
+                  : "border-[#EADCC9] bg-white"
+              }`}
+          >
+            <span className="block text-sm font-semibold">Free Event</span>
+            <span className="mt-1 block text-xs opacity-70">
+              No ticket charges
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setFormData((previous) => ({
+                ...previous,
+                pricingType: "paid",
+                ticketPrice:
+                  previous.ticketPrice === "0" ? "" : previous.ticketPrice,
+              }));
+              setMessage("");
+            }}
+            className={`rounded-xl border p-4 text-left transition ${formData.pricingType === "paid"
+                ? "border-[#FF8A25] bg-[#FF8A25]/10"
+                : isDarkMode
+                  ? "border-[#454B46] bg-[#202522]"
+                  : "border-[#EADCC9] bg-white"
+              }`}
+          >
+            <span className="block text-sm font-semibold">Paid Event</span>
+            <span className="mt-1 block text-xs opacity-70">
+              Set a ticket price
+            </span>
+          </button>
+        </div>
+
+        {formData.pricingType === "paid" && (
+          <div className="mt-5">
+            <label
+              htmlFor="ticketPrice"
+              className={`mb-2 block text-sm font-medium ${isDarkMode ? "text-[#FFF8EB]" : "text-[#38231C]"
+                }`}
+            >
+              Price per person (INR)
+            </label>
+
+            <div className="relative">
+              <span
+                className={`absolute left-4 top-1/2 -translate-y-1/2 ${isDarkMode ? "text-[#B7BDB8]" : "text-[#806B5D]"
+                  }`}
+              >
+                ₹
+              </span>
+
+              <input
+                id="ticketPrice"
+                type="number"
+                min="0.01"
+                max="99999999.99"
+                step="0.01"
+                value={formData.ticketPrice}
+                onChange={(e) => {
+                  setFormData((previous) => ({
+                    ...previous,
+                    ticketPrice: e.target.value,
+                  }));
+                  setMessage("");
+                }}
+                placeholder="Enter ticket price"
+                className={`w-full rounded-xl border py-3 pl-9 pr-4 outline-none transition focus:border-[#FF8A25] ${isDarkMode
+                    ? "border-[#454B46] bg-[#202522] text-[#FFF8EB] placeholder:text-[#89918B]"
+                    : "border-[#EADCC9] bg-white text-[#38231C] placeholder:text-[#A49486]"
+                  }`}
+              />
+            </div>
+
+            <p
+              className={`mt-2 text-xs ${isDarkMode ? "text-[#AAB2AC]" : "text-[#806B5D]"
+                }`}
+            >
+              This amount will be displayed to attendees during event discovery
+              and booking.
+            </p>
+          </div>
+        )}
+
+        {formData.pricingType === "free" && (
+          <p className="mt-4 text-sm text-[#16A36A]">
+            Attendees can register for this event without a ticket charge.
+          </p>
+        )}
+      </div>
       <div className={`rounded-2xl border p-5 sm:p-7 ${cardClass}`}>
         <EventCapacityForm
           capacity={formData.capacity}

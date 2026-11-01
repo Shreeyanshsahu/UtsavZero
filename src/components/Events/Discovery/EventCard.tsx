@@ -13,7 +13,14 @@ interface EventCardProps {
 
 export default function EventCard({ event }: EventCardProps) {
   const { isDarkMode } = useTheme();
-
+  const priceLabel =
+    event.price === 0
+      ? "Free"
+      : new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 2,
+      }).format(event.price);
   const cardBackground = isDarkMode
     ? "bg-[#222826] border border-[#333]"
     : "bg-white";
@@ -137,6 +144,19 @@ export default function EventCard({ event }: EventCardProps) {
                 Firecracker-Free
               </span>
             )}
+            <span
+              className={`
+                    rounded-[5px] px-2 py-1
+                    font-lora text-[9px] font-semibold
+                    leading-3 sm:text-[11px]
+                    ${event.price === 0
+                  ? "bg-[#E8F3E8] text-[#557B4B]"
+                  : "bg-[#FDE9DF] text-[#F0440A]"
+                }
+              `}
+              >
+              {priceLabel}
+            </span>
           </div>
 
           {/* Seats and Arrow */}

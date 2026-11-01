@@ -9,6 +9,8 @@ import RoleNavigation from "./navbar/RoleNavigation";
 import LogoutButton from "./navbar/LogoutButton";
 import ThemeToggle from "./navbar/ThemeToggle";
 import MobileNavigation from "./navbar/MobileNavigation";
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
 
 interface NavbarProps {
   isDarkMode: boolean;
@@ -20,6 +22,7 @@ export default function Navbar({
   setIsDarkMode,
 }: NavbarProps) {
   const { user, roles, loading } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const isCivicAdmin = roles.includes("civic_demo_admin");
   const isOrganizer = roles.includes("private_organizer");
@@ -71,11 +74,11 @@ export default function Navbar({
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full px-2 py-2 sm:px-6 sm:py-3">
+    <header className="sticky top-0 z-50 w-full md:px-3 py-2 sm:px-6 sm:py-3">
       <nav
         className={`
           mx-auto flex h-[68px] max-w-7xl items-center justify-between
-          rounded-2xl border px-4 shadow-lg backdrop-blur-xl
+          rounded-2xl border  shadow-lg backdrop-blur-xl
           transition-colors duration-300 sm:px-5
           ${
             isDarkMode

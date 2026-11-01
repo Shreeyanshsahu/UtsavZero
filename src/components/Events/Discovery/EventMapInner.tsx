@@ -12,6 +12,11 @@ import type { Event } from "@/types/event";
 import { useTheme } from "@/context/ThemeContext";
 import EventMapMarker from "./EventMapMarker";
 
+type EventWithCoordinates = Event & {
+  latitude: number;
+  longitude: number;
+};
+
 interface EventMapInnerProps {
   events: Event[];
   selectedEventId: string | null;
@@ -21,7 +26,7 @@ interface EventMapInnerProps {
 function MapController({
   selectedEvent,
 }: {
-  selectedEvent: Event | undefined;
+  selectedEvent: EventWithCoordinates | undefined;
 }) {
   const map = useMap();
 
@@ -49,7 +54,15 @@ export default function EventMapInner({
 }: EventMapInnerProps) {
   const { isDarkMode } = useTheme();
 
-  const selectedEvent = events.find(
+  // Only events with valid coordinates can appear on the map.
+  const eventsWithCoordinates = events.filter(
+    (event): event is EventWithCoordinates =>
+      event.latitude !== null &&
+      event.longitude !== null
+  );
+
+  // Only fly to an event if it has valid coordinates.
+  const selectedEvent = eventsWithCoordinates.find(
     (event) => event.id === selectedEventId
   );
 
@@ -70,7 +83,7 @@ export default function EventMapInner({
 
       <MapController selectedEvent={selectedEvent} />
 
-      {events.map((event) => (
+      {eventsWithCoordinates.map((event) => (
         <EventMapMarker
           key={event.id}
           event={event}

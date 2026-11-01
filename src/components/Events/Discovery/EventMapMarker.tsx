@@ -9,11 +9,13 @@ import Link from "next/link";
 import type { Event } from "@/types/event";
 
 interface EventMapMarkerProps {
-  event: Event;
+  event: Event & {
+    latitude: number;
+    longitude: number;
+  };
   isSelected: boolean;
   onSelect: (eventId: string) => void;
 }
-
 function getMarkerColor(event: Event) {
   if (event.category.includes("Cultural")) return "#F0440A";
   if (event.category.includes("Music")) return "#4CAF50";
