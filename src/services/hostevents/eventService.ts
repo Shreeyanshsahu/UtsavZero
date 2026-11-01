@@ -20,6 +20,8 @@ export interface CreateEventInput {
   capacity: number;
   status: "draft" | "published";
   coverImageKey?: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export async function fetchLocalities(): Promise<Locality[]> {
@@ -72,7 +74,28 @@ export async function createEvent(input: CreateEventInput) {
   ) {
     throw new Error("Please provide a valid future event schedule.");
   }
+  const { latitude, longitude } = input;
 
+  if (
+    (latitude === null) !== (longitude === null)
+  ) {
+    throw new Error("Please select a complete event location.");
+  }
+
+  if (
+    latitude !== null &&
+    longitude !== null &&
+    (
+      !Number.isFinite(latitude) ||
+      !Number.isFinite(longitude) ||
+      latitude < -90 ||
+      latitude > 90 ||
+      longitude < -180 ||
+      longitude > 180
+    )
+  ) {
+    throw new Error("Please select valid geographic coordinates.");
+  }
   const { data, error } = await supabase
     .from("events")
     .insert({
@@ -90,6 +113,8 @@ export async function createEvent(input: CreateEventInput) {
       status: input.status,
       is_firecracker_free: true,
       cover_image_key: input.coverImageKey ?? null,
+      latitude: input.latitude,
+      longitude: input.longitude,
     })
     .select("*")
     .single();

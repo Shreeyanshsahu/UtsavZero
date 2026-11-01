@@ -11,7 +11,7 @@ import EventScheduleForm from "./EventScheduleForm";
 import EventCapacityForm from "./EventCapacityForm";
 import EventImageUpload from "./EventImageUpload";
 import EventLocalitySelect from "./EventLocalitySelect";
-
+import EventLocationPicker from "./EventLocationPicker";
 import {
   createEvent,
   fetchLocalities,
@@ -29,6 +29,8 @@ interface EventFormData {
   endsAt: string;
   capacity: number;
   image: File | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 interface EventFormProps {
   onEventCreated?: () => void;
@@ -44,12 +46,14 @@ const initialFormData: EventFormData = {
   endsAt: "",
   capacity: 100,
   image: null,
+  latitude: null,
+  longitude: null,
 };
 
 export default function EventForm({
   onEventCreated,
 }: EventFormProps) {
-    const { isDarkMode } = useTheme();
+  const { isDarkMode } = useTheme();
 
   const [formData, setFormData] =
     useState<EventFormData>(initialFormData);
@@ -162,87 +166,107 @@ export default function EventForm({
 
     return true;
   }
+  function handleLocationChange(
+    latitude: number,
+    longitude: number
+  ) {
+    setFormData((previous) => ({
+      ...previous,
+      latitude,
+      longitude,
+    }));
 
+    setMessage("");
+  }
   const handleSubmit = async (status: "draft" | "published") => {
-  setMessage("");
+    setMessage("");
 
-  if (
-    !formData.title.trim() ||
-    !formData.description.trim() ||
-    !formData.category ||
-    !formData.venueName.trim() ||
-    !formData.address.trim() ||
-    !formData.startsAt ||
-    !formData.endsAt
-  ) {
-    setMessageType("error");
-    setMessage("Please complete all required fields.");
-    return;
-  }
-
-  const start = new Date(formData.startsAt);
-  const end = new Date(formData.endsAt);
-
-  if (start <= new Date() || end <= start) {
-    setMessageType("error");
-    setMessage("Please select a valid future event schedule.");
-    return;
-  }
-
-  if (
-    !Number.isInteger(formData.capacity) ||
-    formData.capacity < 1 ||
-    formData.capacity > 10000
-  ) {
-    setMessageType("error");
-    setMessage("Capacity must be between 1 and 10,000.");
-    return;
-  }
-
-  setSaving(true);
-
-  try {
-    // Upload selected image to Cloudflare R2.
-    let coverImageKey: string | null = null;
-
-    if (formData.image) {
-      coverImageKey = await uploadEventImage(formData.image);
+    if (
+      !formData.title.trim() ||
+      !formData.description.trim() ||
+      !formData.category ||
+      !formData.venueName.trim() ||
+      !formData.address.trim() ||
+      !formData.startsAt ||
+      !formData.endsAt
+    ) {
+      setMessageType("error");
+      setMessage("Please complete all required fields.");
+      return;
     }
 
-    // Create the event and save its R2 image reference.
-    await createEvent({
-      title: formData.title,
-      description: formData.description,
-      category: formData.category,
-      venueName: formData.venueName,
-      address: formData.address,
-      localityId: formData.localityId,
-      startsAt: formData.startsAt,
-      endsAt: formData.endsAt,
-      capacity: formData.capacity,
-      coverImageKey,
-      status,
-    });
-    onEventCreated?.();
-    setMessageType("success");
-    setMessage(
-      status === "draft"
-        ? "Event saved as draft successfully!"
-        : "Event published successfully!"
-    );
+    const start = new Date(formData.startsAt);
+    const end = new Date(formData.endsAt);
 
-    setFormData(initialFormData);
-  } catch (error) {
-    setMessageType("error");
-    setMessage(
-      error instanceof Error
-        ? error.message
-        : "Something went wrong while creating your event."
-    );
-  } finally {
-    setSaving(false);
-  }
-};
+    if (start <= new Date() || end <= start) {
+      setMessageType("error");
+      setMessage("Please select a valid future event schedule.");
+      return;
+    }
+
+    if (
+      !Number.isInteger(formData.capacity) ||
+      formData.capacity < 1 ||
+      formData.capacity > 10000
+    ) {
+      setMessageType("error");
+      setMessage("Capacity must be between 1 and 10,000.");
+      return;
+    }
+    if (
+      formData.latitude === null ||
+      formData.longitude === null
+    ) {
+      setMessageType("error");
+      setMessage("Please select the event location on the map.");
+      return;
+    }
+    setSaving(true);
+
+    try {
+      // Upload selected image to Cloudflare R2.
+      let coverImageKey: string | null = null;
+
+      if (formData.image) {
+        coverImageKey = await uploadEventImage(formData.image);
+      }
+
+      // Create the event and save its R2 image reference.
+      await createEvent({
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        venueName: formData.venueName,
+        address: formData.address,
+        localityId: formData.localityId,
+        startsAt: formData.startsAt,
+        endsAt: formData.endsAt,
+        capacity: formData.capacity,
+        coverImageKey,
+        status,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+      });
+      onEventCreated?.();
+      setMessageType("success");
+      setMessage(
+        status === "draft"
+          ? "Event saved as draft successfully!"
+          : "Event published successfully!"
+      );
+
+      setFormData(initialFormData);
+    } catch (error) {
+      setMessageType("error");
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while creating your event."
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <form
@@ -274,7 +298,13 @@ export default function EventForm({
           loading={loadingLocalities}
         />
       </div>
-
+      <div className={`rounded-2xl border p-5 sm:p-7 ${cardClass}`}>
+        <EventLocationPicker
+          latitude={formData.latitude}
+          longitude={formData.longitude}
+          onLocationChange={handleLocationChange}
+        />
+      </div>
       <div className={`rounded-2xl border p-5 sm:p-7 ${cardClass}`}>
         <EventScheduleForm
           startsAt={formData.startsAt}
@@ -317,11 +347,10 @@ export default function EventForm({
           type="button"
           disabled={saving}
           onClick={() => handleSubmit("draft")}
-          className={`${buttonClass} ${
-            isDarkMode
-              ? "border border-[#454B46] bg-[#202522] text-[#FFF8EB] hover:bg-[#292E2B]"
-              : "border border-[#EADCC9] bg-white text-[#38231C] hover:bg-[#FFF4E3]"
-          }`}
+          className={`${buttonClass} ${isDarkMode
+            ? "border border-[#454B46] bg-[#202522] text-[#FFF8EB] hover:bg-[#292E2B]"
+            : "border border-[#EADCC9] bg-white text-[#38231C] hover:bg-[#FFF4E3]"
+            }`}
         >
           <Save size={17} />
           {saving ? "Saving..." : "Save Draft"}

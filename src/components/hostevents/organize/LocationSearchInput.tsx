@@ -1,255 +1,352 @@
 
 "use client";
 
-import { useCallback, useRef, useState } from "react";
-import { Search, MapPin, Loader2, AlertCircle } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import {
+  LocateFixed,
+  LoaderCircle,
+  MapPin,
+  Search,
+} from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 
 export interface NominatimResult {
-  place_id: number;
-  lat: string;
-  lon: string;
-  display_name: string;
-  name?: string;
-  type?: string;
+  id: string;
+  name: string;
+  address: string;
+  formatted: string;
+  lat: number;
+  lon: number;
+  distance: number | null;
+  resultType: string;
 }
 
 interface LocationSearchInputProps {
   onSelect: (result: NominatimResult) => void;
+  onCurrentLocationDetected?: (
+    latitude: number,
+    longitude: number
+  ) => void;
+}
+
+interface AutocompleteResponse {
+  results?: NominatimResult[];
+  error?: string;
 }
 
 export default function LocationSearchInput({
   onSelect,
+  onCurrentLocationDetected,
 }: LocationSearchInputProps) {
   const { isDarkMode } = useTheme();
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<NominatimResult[]>([]);
+
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+
   const [loading, setLoading] = useState(false);
+  const [locating, setLocating] = useState(false);
+
+  const [locationMessage, setLocationMessage] = useState("");
   const [error, setError] = useState("");
-  const [searched, setSearched] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
-  const abortRef = useRef<AbortController | null>(null);
-  const lastSearchRef = useRef(0);
+  const textClass = isDarkMode
+    ? "text-[#FFF8EB]"
+    : "text-[#38231C]";
 
-  const inputClass = `w-full rounded-xl border px-4 py-3 pl-10 text-sm outline-none transition focus:border-[#F0440A] focus:ring-2 focus:ring-[#F0440A]/10 ${
-    isDarkMode
-      ? "border-[#343B36] bg-[#202522] text-[#FFF8EB] placeholder:text-[#6B6860]"
-      : "border-[#EADCC9] bg-white text-[#38231C] placeholder:text-[#B7A99A]"
-  }`;
+  const mutedClass = isDarkMode
+    ? "text-[#B7B0A5]"
+    : "text-[#806B5D]";
 
-  const mutedClass = isDarkMode ? "text-[#B7B0A5]" : "text-[#806B5D]";
+  const inputClass = isDarkMode
+    ? "border-[#454C47] bg-[#292E2B] text-[#FFF8EB] placeholder:text-[#8F968F]"
+    : "border-[#EADCC9] bg-white text-[#38231C] placeholder:text-[#A39486]";
 
-  const resultItemClass = isDarkMode
-    ? "border-[#343B36] hover:bg-[#292E2B]"
-    : "border-[#EADCC9] hover:bg-[#FFF4E3]";
+  const cardClass = isDarkMode
+    ? "border-[#454C47] bg-[#292E2B]"
+    : "border-[#EADCC9] bg-white";
 
-  const headingClass = isDarkMode ? "text-[#FFF8EB]" : "text-[#38231C]";
+  // Detect the user's current location.
+  // Handle successful location detection.
+function handleLocationSuccess(position: GeolocationPosition) {
+  setLatitude(position.coords.latitude);
+  setLongitude(position.coords.longitude);
+  setLocating(false);
+  setLocationMessage("Searching near your current location.");
+  onCurrentLocationDetected?.(
+  position.coords.latitude,
+  position.coords.longitude
+);
+}
 
-  const handleSearch = useCallback(async () => {
-    const trimmed = query.trim();
+// Handle location detection errors.
+function handleLocationError(error: GeolocationPositionError) {
+  setLocating(false);
 
-    if (trimmed.length < 3) {
-      setError("Please enter at least 3 characters to search.");
+  if (error.code === error.PERMISSION_DENIED) {
+    setLocationMessage(
+      "Location permission denied. You can still search manually."
+    );
+  } else if (error.code === error.TIMEOUT) {
+    setLocationMessage(
+      "Location request timed out. Please try again."
+    );
+  } else {
+    setLocationMessage(
+      "Couldn't detect your location. You can search manually."
+    );
+  }
+}
+
+// Automatically request location when the picker opens.
+useEffect(() => {
+  if (!navigator.geolocation) {
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    handleLocationSuccess,
+    handleLocationError,
+    {
+      enableHighAccuracy: true,
+      timeout: 12000,
+      maximumAge: 60000,
+    }
+  );
+}, []);
+const requestCurrentLocation = () => {
+  if (!navigator.geolocation) {
+    setLocationMessage(
+      "Location detection is not supported by this browser."
+    );
+    return;
+  }
+
+  setLocating(true);
+  setLocationMessage("");
+
+  navigator.geolocation.getCurrentPosition(
+    handleLocationSuccess,
+    handleLocationError,
+    {
+      enableHighAccuracy: true,
+      timeout: 12000,
+      maximumAge: 60000,
+    }
+  );
+};
+  // Live autocomplete with a 350ms debounce.
+  useEffect(() => {
+    const trimmedQuery = query.trim();
+
+    if (trimmedQuery.length < 2) {
       return;
     }
 
-    // Rate-limit: at least 1 second between requests (Nominatim policy)
-    const now = Date.now();
-    const elapsed = now - lastSearchRef.current;
-
-    if (elapsed < 1000) {
-      const wait = 1000 - elapsed;
-      await new Promise((resolve) => setTimeout(resolve, wait));
-    }
-
-    // Abort any in-flight request
-    if (abortRef.current) {
-      abortRef.current.abort();
-    }
-
     const controller = new AbortController();
-    abortRef.current = controller;
 
-    setLoading(true);
-    setError("");
-    setResults([]);
-    setSearched(true);
+    const timeout = setTimeout(async () => {
+      setLoading(true);
+      setError("");
 
-    try {
-      lastSearchRef.current = Date.now();
+      try {
+        const params = new URLSearchParams({
+          text: trimmedQuery,
+        });
 
-      const params = new URLSearchParams({
-        q: trimmed,
-        format: "json",
-        addressdetails: "1",
-        limit: "5",
-        countrycodes: "in",
-      });
-
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?${params}`,
-        {
-          signal: controller.signal,
-          headers: {
-            "User-Agent": "UtsavZero/1.0 (community-celebrations-platform)",
-            Accept: "application/json",
-          },
+        if (latitude !== null && longitude !== null) {
+          params.set("lat", String(latitude));
+          params.set("lon", String(longitude));
         }
-      );
 
-      if (!response.ok) {
-        if (response.status === 429) {
+        const response = await fetch(
+          `/api/places/autocomplete?${params.toString()}`,
+          { signal: controller.signal }
+        );
+
+        const data: AutocompleteResponse = await response.json();
+
+        if (!response.ok) {
           throw new Error(
-            "Too many requests. Please wait a moment and try again."
+            data.error || "Location search failed."
           );
         }
-        throw new Error("Location search failed. Please try again.");
+
+        setResults(data.results ?? []);
+        setShowResults(true);
+      } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") {
+          return;
+        }
+
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to search locations."
+        );
+
+        setResults([]);
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
+    }, 350);
 
-      const data: NominatimResult[] = await response.json();
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [query, latitude, longitude]);
 
-      if (!controller.signal.aborted) {
-        setResults(data);
-      }
-    } catch (err) {
-      if (err instanceof Error && err.name === "AbortError") return;
+  function handleQueryChange(value: string) {
+    setQuery(value);
+    setShowResults(true);
 
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to search for locations. Please try again."
-      );
-    } finally {
-      if (!controller.signal.aborted) {
-        setLoading(false);
-      }
-    }
-  }, [query]);
-
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleSearch();
-    }
+    // Clear previous results immediately.
+    setResults([]);
+    setError("");
+    setLoading(false);
   }
 
-  function handleSelectResult(result: NominatimResult) {
-    onSelect(result);
-    setQuery(result.display_name.split(",").slice(0, 2).join(",").trim());
+  function handleSelect(result: NominatimResult) {
+    setQuery(result.name);
+    setShowResults(false);
     setResults([]);
-    setSearched(false);
+
+    onSelect(result);
+  }
+
+  function formatDistance(distance: number | null) {
+    if (distance === null || !Number.isFinite(distance)) {
+      return "";
+    }
+
+    return distance < 1000
+      ? `${Math.round(distance)} m away`
+      : `${(distance / 1000).toFixed(1)} km away`;
   }
 
   return (
-    <div className="space-y-3">
-      {/* Search input with button */}
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search
-            size={16}
-            className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${mutedClass}`}
-          />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Search venue, landmark or address..."
-            className={inputClass}
-            aria-label="Search for a location"
-          />
-        </div>
+    <div className="relative space-y-3">
+      {/* Search input */}
+      <div className="relative">
+        <Search
+          size={18}
+          className={`absolute left-3 top-1/2 -translate-y-1/2 ${mutedClass}`}
+        />
 
-        <button
-          type="button"
-          onClick={handleSearch}
-          disabled={loading || query.trim().length < 3}
-          className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-[#FFBE45] via-[#FF6A16] to-[#F0440A] px-4 py-3 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-          aria-label="Search location"
-        >
-          {loading ? (
-            <Loader2 size={16} className="animate-spin" />
-          ) : (
-            <Search size={16} />
-          )}
-          <span className="hidden sm:inline">Search</span>
-        </button>
+        <input
+          type="text"
+          value={query}
+          onChange={(event) =>
+            handleQueryChange(event.target.value)
+          }
+          onFocus={() => setShowResults(true)}
+          placeholder="Search school, college, park, venue..."
+          autoComplete="off"
+          className={`w-full rounded-xl border py-3 pl-10 pr-11 text-sm outline-none focus:border-[#F0440A] focus:ring-1 focus:ring-[#F0440A] ${inputClass}`}
+        />
+
+        {loading && (
+          <LoaderCircle
+            size={18}
+            className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-[#F0440A]"
+          />
+        )}
       </div>
 
-      {/* Attribution */}
-      <p className={`text-[10px] ${mutedClass}`}>
-        Search powered by{" "}
-        <a
-          href="https://nominatim.openstreetmap.org/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline"
-        >
-          OpenStreetMap Nominatim
-        </a>
-        {" · "}
-        <a
-          href="https://www.openstreetmap.org/copyright"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline"
-        >
-          © OpenStreetMap contributors
-        </a>
-      </p>
+      {/* Current location */}
+      <button
+        type="button"
+        onClick={requestCurrentLocation}
+        disabled={locating}
+        className={`flex w-full items-center justify-center gap-2 rounded-xl border p-3 text-sm font-semibold transition hover:border-[#F0440A] ${cardClass} ${textClass}`}
+      >
+        {locating ? (
+          <LoaderCircle size={17} className="animate-spin" />
+        ) : (
+          <LocateFixed
+            size={17}
+            className="text-[#F0440A]"
+          />
+        )}
 
-      {/* Error */}
+        {locating
+          ? "Detecting your location..."
+          : "Use my current location"}
+      </button>
+
+      {locationMessage && (
+        <p className={`text-xs ${mutedClass}`}>
+          {locationMessage}
+        </p>
+      )}
+
       {error && (
+        <p className="text-xs text-red-500">{error}</p>
+      )}
+
+      {query.trim().length === 1 && (
+        <p className={`text-xs ${mutedClass}`}>
+          Type at least 2 characters to search.
+        </p>
+      )}
+
+      {/* Autocomplete suggestions */}
+      {showResults && results.length > 0 && (
         <div
-          className={`flex items-start gap-2 rounded-xl border p-3 text-sm ${
-            isDarkMode
-              ? "border-red-900 bg-red-950/30 text-red-300"
-              : "border-red-200 bg-red-50 text-red-700"
-          }`}
+          className={`absolute left-0 right-0 z-[1000] max-h-72 overflow-y-auto rounded-xl border shadow-xl ${cardClass}`}
         >
-          <AlertCircle size={16} className="mt-0.5 shrink-0" />
-          <span>{error}</span>
+          {results.map((result) => (
+            <button
+              key={result.id}
+              type="button"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => handleSelect(result)}
+              className="flex w-full items-start gap-3 border-b p-3 text-left last:border-b-0 hover:bg-[#F0440A]/10"
+            >
+              <MapPin
+                size={18}
+                className="mt-1 shrink-0 text-[#F0440A]"
+              />
+
+              <span className="min-w-0 flex-1">
+                <span
+                  className={`block text-sm font-semibold ${textClass}`}
+                >
+                  {result.name}
+                </span>
+
+                <span
+                  className={`mt-1 block text-xs ${mutedClass}`}
+                >
+                  {result.address}
+                </span>
+
+                {result.distance !== null && (
+                  <span className="mt-1 block text-xs text-[#F0440A]">
+                    {formatDistance(result.distance)}
+                  </span>
+                )}
+              </span>
+            </button>
+          ))}
         </div>
       )}
 
-      {/* Results */}
-      {results.length > 0 && (
-        <ul
-          className={`max-h-60 overflow-y-auto rounded-xl border ${
-            isDarkMode ? "border-[#343B36] bg-[#202522]" : "border-[#EADCC9] bg-white"
-          }`}
-          role="listbox"
-          aria-label="Location search results"
-        >
-          {results.map((result) => (
-            <li key={result.place_id}>
-              <button
-                type="button"
-                onClick={() => handleSelectResult(result)}
-                className={`flex w-full items-start gap-3 border-b px-4 py-3 text-left text-sm transition last:border-b-0 ${resultItemClass}`}
-                role="option"
-                aria-selected={false}
-              >
-                <MapPin
-                  size={16}
-                  className="mt-0.5 shrink-0 text-[#F0440A]"
-                />
-                <span className={headingClass}>
-                  {result.display_name}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {/* No results */}
-      {searched && !loading && !error && results.length === 0 && (
-        <p className={`text-sm ${mutedClass}`}>
-          No locations found. Try a different search term.
-        </p>
-      )}
+      {showResults &&
+        !loading &&
+        query.trim().length >= 2 &&
+        results.length === 0 &&
+        !error && (
+          <p className={`text-xs ${mutedClass}`}>
+            No locations found. Try a different search.
+          </p>
+        )}
     </div>
   );
 }
