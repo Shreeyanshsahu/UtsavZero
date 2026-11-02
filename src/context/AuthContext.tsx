@@ -17,6 +17,13 @@ type AppRole =
   | "private_organizer"
   | "civic_demo_admin";
 
+// Roles a person can request during registration.
+// These are not all database roles.
+export type SignupRole =
+  | "citizen"
+  | "private_organizer"
+  | "government_personnel";
+
 type UserProfile = {
   id: string;
   email: string | null;
@@ -34,7 +41,8 @@ type AuthContextType = {
   signUp: (
     email: string,
     password: string,
-    fullName: string
+    fullName: string,
+    requestedRole?: SignupRole
   ) => Promise<{
     error: Error | null;
     session: Session | null;
@@ -50,7 +58,9 @@ type AuthContextType = {
 
   refreshProfile: () => Promise<void>;
 
-  signInWithGoogle(redirectTo?: string): Promise<{ error: Error | null }>;
+  signInWithGoogle(redirectTo?: string): Promise<{
+    error: Error | null;
+  }>;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -159,10 +169,12 @@ export function AuthProvider({
     };
   }, [loadProfile]);
 
+  // Signup with the requested registration category.
   const signUp = async (
     email: string,
     password: string,
-    fullName: string
+    fullName: string,
+    requestedRole: SignupRole = "citizen"
   ) => {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -170,6 +182,7 @@ export function AuthProvider({
       options: {
         data: {
           full_name: fullName,
+          requested_role: requestedRole,
         },
       },
     });

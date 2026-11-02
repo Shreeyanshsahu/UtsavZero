@@ -4,7 +4,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth, type SignupRole } from "@/context/AuthContext";
 import { UserRound, Mail, Lock, Loader2 } from "lucide-react";
 
 export default function SignupPage() {
@@ -15,6 +15,9 @@ export default function SignupPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+
+    const [requestedRole, setRequestedRole] =
+        useState<SignupRole>("citizen");
 
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
@@ -42,7 +45,8 @@ export default function SignupPage() {
             const { error, session, user } = await signUp(
                 email.trim(),
                 password,
-                fullName.trim()
+                fullName.trim(),
+                requestedRole
             );
 
             if (error) {
@@ -51,7 +55,6 @@ export default function SignupPage() {
             }
 
             if (session && user) {
-                // Signup immediately created an authenticated session.
                 router.replace("/");
                 router.refresh();
                 return;
@@ -125,13 +128,69 @@ export default function SignupPage() {
 
                 <div className="my-6 flex items-center gap-4">
                     <div className="h-px flex-1 bg-[#EADCC9]" />
-                    <span className="text-xs text-[#806B5D]">OR SIGN UP WITH EMAIL</span>
+                    <span className="text-xs text-[#806B5D]">
+                        OR SIGN UP WITH EMAIL
+                    </span>
                     <div className="h-px flex-1 bg-[#EADCC9]" />
                 </div>
 
                 <form onSubmit={handleSignup} className="space-y-4">
+
+                    {/* Registration category */}
                     <div>
-                        <label htmlFor="fullName" className="mb-2 block text-sm font-medium text-[#38231C]">
+                        <label
+                            htmlFor="requestedRole"
+                            className="mb-2 block text-sm font-medium text-[#38231C]"
+                        >
+                            I want to register as
+                        </label>
+
+                        <select
+                            id="requestedRole"
+                            value={requestedRole}
+                            onChange={(e) =>
+                                setRequestedRole(e.target.value as SignupRole)
+                            }
+                            disabled={loading || googleLoading}
+                            className="w-full rounded-xl border border-[#EADCC9] bg-white px-4 py-3 text-sm text-[#38231C] outline-none transition focus:border-[#F0440A] disabled:opacity-60"
+                        >
+                            <option value="citizen">Citizen</option>
+                            <option value="private_organizer">
+                                Private Organizer
+                            </option>
+                            <option value="government_personnel">
+                                Government Personnel
+                            </option>
+                        </select>
+
+                        {requestedRole === "citizen" && (
+                            <p className="mt-2 text-xs text-[#806B5D]">
+                                Discover events, make bookings, and participate
+                                in cleaner celebrations.
+                            </p>
+                        )}
+
+                        {requestedRole === "private_organizer" && (
+                            <p className="mt-2 text-xs text-[#806B5D]">
+                                Host private, firecracker-free community events
+                                and manage registrations.
+                            </p>
+                        )}
+
+                        {requestedRole === "government_personnel" && (
+                            <p className="mt-2 text-xs text-[#806B5D]">
+                                Register your interest as government personnel.
+                                Access to civic planning tools requires separate
+                                verification and authorization.
+                            </p>
+                        )}
+                    </div>
+
+                    <div>
+                        <label
+                            htmlFor="fullName"
+                            className="mb-2 block text-sm font-medium text-[#38231C]"
+                        >
                             Full name
                         </label>
                         <div className="flex items-center gap-3 rounded-xl border border-[#EADCC9] px-4">
@@ -150,7 +209,10 @@ export default function SignupPage() {
                     </div>
 
                     <div>
-                        <label htmlFor="email" className="mb-2 block text-sm font-medium text-[#38231C]">
+                        <label
+                            htmlFor="email"
+                            className="mb-2 block text-sm font-medium text-[#38231C]"
+                        >
                             Email address
                         </label>
                         <div className="flex items-center gap-3 rounded-xl border border-[#EADCC9] px-4">
@@ -169,7 +231,10 @@ export default function SignupPage() {
                     </div>
 
                     <div>
-                        <label htmlFor="password" className="mb-2 block text-sm font-medium text-[#38231C]">
+                        <label
+                            htmlFor="password"
+                            className="mb-2 block text-sm font-medium text-[#38231C]"
+                        >
                             Password
                         </label>
                         <div className="flex items-center gap-3 rounded-xl border border-[#EADCC9] px-4">
@@ -189,7 +254,10 @@ export default function SignupPage() {
                     </div>
 
                     <div>
-                        <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium text-[#38231C]">
+                        <label
+                            htmlFor="confirmPassword"
+                            className="mb-2 block text-sm font-medium text-[#38231C]"
+                        >
                             Confirm password
                         </label>
                         <div className="flex items-center gap-3 rounded-xl border border-[#EADCC9] px-4">
@@ -201,7 +269,9 @@ export default function SignupPage() {
                                 minLength={8}
                                 autoComplete="new-password"
                                 value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                onChange={(e) =>
+                                    setConfirmPassword(e.target.value)
+                                }
                                 placeholder="Re-enter your password"
                                 className="w-full bg-transparent py-3 text-sm text-[#38231C] outline-none"
                             />
@@ -209,15 +279,24 @@ export default function SignupPage() {
                     </div>
 
                     {error && (
-                        <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+                        <p
+                            role="alert"
+                            className="rounded-lg bg-red-50 p-3 text-sm text-red-600"
+                        >
                             {error}
                         </p>
                     )}
 
                     {success && (
-                        <div role="status" className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
+                        <div
+                            role="status"
+                            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
+                        >
                             {success}
-                            <Link href="/login" className="mt-2 block font-semibold underline">
+                            <Link
+                                href="/login"
+                                className="mt-2 block font-semibold underline"
+                            >
                                 Go to Login
                             </Link>
                         </div>
@@ -228,14 +307,19 @@ export default function SignupPage() {
                         disabled={loading || googleLoading}
                         className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#FFBE45] via-[#FF6A16] to-[#F0440A] py-3 font-semibold text-white shadow-md transition hover:opacity-90 disabled:opacity-60"
                     >
-                        {loading && <Loader2 size={19} className="animate-spin" />}
+                        {loading && (
+                            <Loader2 size={19} className="animate-spin" />
+                        )}
                         {loading ? "Creating account..." : "Create Account"}
                     </button>
                 </form>
 
                 <p className="mt-7 text-center text-sm text-[#806B5D]">
                     Already have an account?{" "}
-                    <Link href="/login" className="font-semibold text-[#F0440A] hover:underline">
+                    <Link
+                        href="/login"
+                        className="font-semibold text-[#F0440A] hover:underline"
+                    >
                         Sign In
                     </Link>
                 </p>
