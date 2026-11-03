@@ -41,8 +41,8 @@ const navigation = [
     icon: MapPinned,
   },
   {
-    label: "Applications",
-    href: "/civic/applications",
+    label: "Applications & Authorizations",
+    href: "/civic/authorizations",
     icon: ClipboardCheck,
   },
   {
