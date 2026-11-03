@@ -30,6 +30,7 @@ export default function MobileNavigation({
     if (signingOut) return;
 
     setSigningOut(true);
+
     const { error } = await signOut();
 
     if (error) {
@@ -46,7 +47,7 @@ export default function MobileNavigation({
     profile?.full_name || user?.email?.split("@")[0] || "My Account";
 
   return (
-    <div className="md:hidden">
+    <div className="relative md:hidden">
       <button
         type="button"
         onClick={() => setIsOpen((previous) => !previous)}
@@ -65,13 +66,13 @@ export default function MobileNavigation({
       {isOpen && (
         <div
           id="mobile-navigation"
-          className={`absolute left-0 top-full w-full border-t px-4 pb-5 pt-3 shadow-xl ${
+          className={`absolute right-0 top-full z-50 mt-3 w-[min(92vw,360px)] rounded-2xl border px-4 pb-5 pt-3 shadow-xl ${
             isDarkMode
               ? "border-[#343B36] bg-[#171A19]"
               : "border-[#EADCC9] bg-[#FFF8EB]"
           }`}
         >
-          <nav className="mx-auto flex max-w-lg flex-col gap-1">
+          <nav className="flex flex-col gap-1">
             {links.map((link) => (
               <Link
                 key={link.href}
@@ -89,7 +90,7 @@ export default function MobileNavigation({
           </nav>
 
           <div
-            className={`mx-auto mt-3 max-w-lg border-t pt-4 ${
+            className={`mt-3 border-t pt-4 ${
               isDarkMode ? "border-[#343B36]" : "border-[#EADCC9]"
             }`}
           >
@@ -98,7 +99,7 @@ export default function MobileNavigation({
                 Loading account...
               </p>
             ) : user ? (
-              <div className="flex items-center justify-between gap-3 px-4">
+              <div className="flex items-center justify-between gap-3 px-2">
                 <div className="flex min-w-0 items-center gap-3">
                   <div
                     className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
@@ -120,9 +121,7 @@ export default function MobileNavigation({
                     >
                       {displayName}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      Signed in
-                    </p>
+                    <p className="text-xs text-gray-500">Signed in</p>
                   </div>
                 </div>
 
@@ -137,7 +136,7 @@ export default function MobileNavigation({
                 </button>
               </div>
             ) : (
-              <div className="flex gap-3 px-4">
+              <div className="flex gap-3 px-2">
                 <Link
                   href="/login"
                   onClick={closeMenu}

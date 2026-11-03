@@ -2,7 +2,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-type AppRole = "citizen" | "private_organizer" | "civic_demo_admin";
+type AppRole =
+  | "citizen"
+  | "private_organizer"
+  | "government_organizer"
+  | "civic_demo_admin";
 
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -35,42 +39,49 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  // Verify and refresh the current authentication session.
+  // Verify the authentication session.
   const {
     data,
     error: claimsError,
   } = await supabase.auth.getClaims();
 
   const userId = data?.claims?.sub;
-
   const pathname = request.nextUrl.pathname;
 
-  // Identify protected routes.
-  let requiredRole: AppRole | null = null;
-
-  if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) {
-    requiredRole = "citizen";
-  } else if (
-    pathname === "/organizer" ||
-    pathname.startsWith("/organizer/")
-  ) {
-    requiredRole = "private_organizer";
-  } else if (
+  // Public routes do not require authentication.
+  const isCivicRoute =
     pathname === "/civic" ||
-    pathname.startsWith("/civic/")
-  ) {
-    requiredRole = "civic_demo_admin";
-  }
+    pathname.startsWith("/civic/");
 
-  // Public pages do not require authentication.
-  if (!requiredRole) {
+  const isOrganizerRoute =
+    pathname === "/organizer" ||
+    pathname.startsWith("/organizer/");
+
+  const isProfileRoute =
+    pathname === "/profile" ||
+    pathname.startsWith("/profile/");
+
+  const isLegacyDashboardRoute =
+    pathname === "/dashboard" ||
+    pathname.startsWith("/dashboard/");
+
+  if (
+    !isCivicRoute &&
+    !isOrganizerRoute &&
+    !isProfileRoute &&
+    !isLegacyDashboardRoute
+  ) {
     return supabaseResponse;
   }
 
-  // Redirect unauthenticated users to login.
+  // Require authentication.
   if (claimsError || !userId) {
     const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("next", pathname);
+
+    loginUrl.searchParams.set(
+      "next",
+      pathname + request.nextUrl.search
+    );
 
     const redirectResponse = NextResponse.redirect(loginUrl);
 
@@ -81,7 +92,7 @@ export async function proxy(request: NextRequest) {
     return redirectResponse;
   }
 
-  // Retrieve roles from Supabase using the authenticated session.
+  // Fetch the authenticated user's roles.
   const { data: roleData, error: roleError } = await supabase
     .from("user_roles")
     .select("role")
@@ -106,10 +117,37 @@ export async function proxy(request: NextRequest) {
     (item) => item.role as AppRole
   );
 
-  // Redirect users who do not have the required role.
-  if (!userRoles.includes(requiredRole)) {
+  const isCivicAdmin = userRoles.includes("civic_demo_admin");
+
+  const canHostEvents =
+    userRoles.includes("private_organizer") ||
+    userRoles.includes("government_organizer");
+
+  const isCitizen = userRoles.includes("citizen");
+
+  // Determine whether the user can access this route.
+  let authorized = false;
+
+  if (isCivicRoute) {
+    authorized = isCivicAdmin;
+  } else if (isOrganizerRoute) {
+    authorized = canHostEvents;
+  } else if (isProfileRoute || isLegacyDashboardRoute) {
+    authorized = isCitizen;
+  }
+
+  if (!authorized) {
+    // Redirect to the appropriate account destination.
+    const destination = isCivicAdmin
+      ? "/civic"
+      : canHostEvents
+      ? "/organizer"
+      : isCitizen
+      ? "/profile"
+      : "/";
+
     const redirectResponse = NextResponse.redirect(
-      new URL("/dashboard", request.url)
+      new URL(destination, request.url)
     );
 
     supabaseResponse.cookies.getAll().forEach((cookie) => {

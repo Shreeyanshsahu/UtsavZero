@@ -147,10 +147,10 @@ export default function GovernmentAuthorizationsPage() {
   };
 
   const loadApplications = useCallback(async (showRefresh = false) => {
-  if (showRefresh) {
-    setRefreshing(true);
-    setError(null);
-  }
+    if (showRefresh) {
+      setRefreshing(true);
+      setError(null);
+    }
 
     try {
       // Verify authenticated user
@@ -220,12 +220,12 @@ export default function GovernmentAuthorizationsPage() {
   }, []);
 
   useEffect(() => {
-  const timer = setTimeout(() => {
-    void loadApplications();
-  }, 0);
+    const timer = setTimeout(() => {
+      void loadApplications();
+    }, 0);
 
-  return () => clearTimeout(timer);
-}, [loadApplications]);
+    return () => clearTimeout(timer);
+  }, [loadApplications]);
 
   const pendingCount = applications.filter(
     (application) => application.status === "pending"
@@ -273,7 +273,7 @@ export default function GovernmentAuthorizationsPage() {
     setSuccess(null);
 
     try {
-      const { error: reviewError } = await supabase.rpc(
+      const { data: reviewData, error: reviewError } = await supabase.rpc(
         "review_government_authorization",
         {
           p_application_id: application.id,
@@ -284,6 +284,12 @@ export default function GovernmentAuthorizationsPage() {
 
       if (reviewError) {
         throw new Error(reviewError.message);
+      }
+
+      if (!reviewData || reviewData.success !== true) {
+        throw new Error(
+          reviewData?.message || "The application review was not completed."
+        );
       }
 
       setSuccess(
@@ -511,11 +517,10 @@ export default function GovernmentAuthorizationsPage() {
                   key={item}
                   type="button"
                   onClick={() => setFilter(item)}
-                  className={`rounded-full px-4 py-2 text-xs font-semibold capitalize transition ${
-                    active
+                  className={`rounded-full px-4 py-2 text-xs font-semibold capitalize transition ${active
                       ? "bg-gradient-to-r from-[#FF6A16] to-[#F0440A] text-white"
                       : colors.neutralButton + " border"
-                  }`}
+                    }`}
                 >
                   {item === "all" ? "All applications" : item}
                 </button>

@@ -12,9 +12,10 @@ import {
 import type { User, Session } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 
-type AppRole =
+export type AppRole =
   | "citizen"
   | "private_organizer"
+  | "government_organizer"
   | "civic_demo_admin";
 
 // Roles a person can request during registration.
@@ -170,29 +171,44 @@ export function AuthProvider({
   }, [loadProfile]);
 
   // Signup with the requested registration category.
-  const signUp = async (
-    email: string,
-    password: string,
-    fullName: string,
-    requestedRole: SignupRole = "citizen"
-  ) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          requested_role: requestedRole,
-        },
-      },
-    });
+ const signUp = async (
+  email: string,
+  password: string,
+  fullName: string,
+  requestedRole: SignupRole = "citizen"
+) => {
+  const nextPath =
+    requestedRole === "government_personnel"
+      ? "/government-authorization/apply"
+      : requestedRole === "private_organizer"
+      ? "/organizer"
+      : "/profile";
 
-    return {
-      error,
-      session: data.session,
-      user: data.user,
-    };
+  const emailRedirectTo = new URL(
+    "/auth/callback",
+    window.location.origin
+  );
+
+  emailRedirectTo.searchParams.set("next", nextPath);
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: emailRedirectTo.toString(),
+      data: {
+        full_name: fullName,
+        requested_role: requestedRole,
+      },
+    },
+  });
+
+  return {
+    error,
+    session: data.session,
+    user: data.user,
   };
+};
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
