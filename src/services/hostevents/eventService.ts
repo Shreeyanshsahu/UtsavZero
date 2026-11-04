@@ -25,12 +25,14 @@ export interface CreateEventInput {
   ticketPrice: number;
 }
 
+
 export async function fetchLocalities(): Promise<Locality[]> {
   const supabase = createClient();
 
   const { data, error } = await supabase
     .from("localities")
     .select("id, name, city, state")
+    .eq("locality_type", "ward")
     .order("name", { ascending: true });
 
   if (error) {

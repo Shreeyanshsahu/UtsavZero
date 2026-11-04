@@ -16,14 +16,15 @@
 # next.js
 /.next/
 /out/
-
+/.zip
 # production
 /build
 
 # misc
 .DS_Store
 *.pem
-
+UTSAVZERO_DEVELOPMENT_HANDOFF.md
+Archive.zip
 # debug
 npm-debug.log*
 yarn-debug.log*
@@ -39,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+repomix-output.xml.zip
+
+UTSAVZERO_DEVELOPMENT_HANDOFF.md

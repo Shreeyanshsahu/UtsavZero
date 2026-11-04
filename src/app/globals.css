@@ -93,3 +93,65 @@ body {
   filter: invert(90%) hue-rotate(180deg) brightness(85%) contrast(90%);
   transition: filter 300ms ease;
 }
+
+
+/* Leaflet-Geoman toolbar layout fixes */
+
+.leaflet-container .leaflet-pm-toolbar {
+  z-index: 1000;
+}
+
+.leaflet-container .leaflet-pm-toolbar .button-container {
+  position: relative;
+}
+
+.leaflet-container .leaflet-pm-toolbar .leaflet-buttons-control-button {
+  box-sizing: border-box !important;
+  width: 40px !important;
+  height: 40px !important;
+  padding: 5px !important;
+  display: block !important;
+  line-height: 28px !important;
+}
+
+.leaflet-container .leaflet-pm-toolbar .leaflet-pm-actions-container {
+  position: absolute !important;
+  top: 0 !important;
+  left: 100% !important;
+  right: auto !important;
+  width: max-content !important;
+  white-space: nowrap !important;
+  display: none;
+  z-index: 1100 !important;
+}
+
+.leaflet-container .leaflet-pm-toolbar .button-container.active
+.leaflet-pm-actions-container {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+}
+
+.leaflet-container .leaflet-pm-toolbar .leaflet-pm-actions-container
+a.leaflet-pm-action {
+  display: inline-block !important;
+  position: relative !important;
+  width: auto !important;
+  min-width: 65px !important;
+  height: 32px !important;
+  line-height: 32px !important;
+  padding: 0 10px !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+  text-align: center !important;
+  font-size: 13px !important;
+  color: #fff !important;
+  background: #57483e !important;
+  text-decoration: none !important;
+  border-right: 1px solid #eee !important;
+}
+
+.leaflet-container .leaflet-pm-toolbar
+.leaflet-pm-actions-container a.leaflet-pm-action:hover {
+  background: #e94b0b !important;
+}
