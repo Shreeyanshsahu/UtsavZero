@@ -33,6 +33,7 @@ import type {
 
 import CivicLayout from "@/components/civic/layout/CivicLayout";
 import { createClient } from "@/lib/supabase/client";
+import { useTheme } from "@/context/ThemeContext";
 
 import {
   fetchWardBoundaries,
@@ -45,7 +46,7 @@ const ZoneDrawingMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-[600px] items-center justify-center rounded-2xl bg-[#FFF8EB] text-[#806B5D]">
+      <div className="flex h-[600px] items-center justify-center rounded-2xl border border-[#343C37] bg-[#202522] text-[#AAA69E]">
         <LoaderCircle className="mr-2 animate-spin" size={18} />
         Loading zone drawing map...
       </div>
@@ -53,7 +54,6 @@ const ZoneDrawingMap = dynamic(
   }
 );
 
-// Database locality structure.
 interface Locality {
   id: string;
   name: string;
@@ -63,7 +63,6 @@ interface Locality {
   locality_type: string;
 }
 
-// Combined locality and boundary loading result.
 type PlanningResult = {
   id: string;
   status: "success" | "error";
@@ -72,13 +71,14 @@ type PlanningResult = {
   message?: string;
 };
 
-// Geometry draft is associated with a particular ward.
 interface GeometryDraft {
   localityId: string;
   geometry: GeoJsonObject | null;
 }
 
 function ZonePlanningContent() {
+  const { isDarkMode } = useTheme();
+
   const searchParams = useSearchParams();
   const localityId = searchParams.get("localityId");
 
@@ -88,12 +88,40 @@ function ZonePlanningContent() {
   const [geometryDraft, setGeometryDraft] =
     useState<GeometryDraft | null>(null);
 
-  // Only use geometry belonging to the currently selected ward.
   const proposedGeometry =
     localityId &&
     geometryDraft?.localityId === localityId
       ? geometryDraft.geometry
       : null;
+
+  // Theme classes
+  const cardClass = isDarkMode
+    ? "border-[#343C37] bg-[#202522]"
+    : "border-[#EADCC9] bg-white";
+
+  const innerCardClass = isDarkMode
+    ? "border-[#343C37] bg-[#252B28]"
+    : "border-[#EADCC9] bg-[#FFF8EB]";
+
+  const primaryText = isDarkMode
+    ? "text-[#F5EFE5]"
+    : "text-[#38231C]";
+
+  const secondaryText = isDarkMode
+    ? "text-[#AAA69E]"
+    : "text-[#806B5D]";
+
+  const mutedBadge = isDarkMode
+    ? "bg-[#303833] text-[#B9B5AC]"
+    : "bg-[#F1EDE6] text-[#806B5D]";
+
+  const accentBadge = isDarkMode
+    ? "bg-[#432819] text-[#FF9A52]"
+    : "bg-[#FFF0D8] text-[#E65B16]";
+
+  const dashedBorder = isDarkMode
+    ? "border-[#465149]"
+    : "border-[#D8C7B5]";
 
   // Keep the drawing callback stable.
   const handleGeometryChange = useCallback(
@@ -248,9 +276,17 @@ function ZonePlanningContent() {
       <div className="space-y-6">
 
         {/* Selected locality */}
-        <div className="rounded-2xl border border-[#EADCC9] bg-white p-5">
+        <div
+          className={`rounded-2xl border p-5 ${cardClass}`}
+        >
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-[#FFF0D8] p-3">
+            <div
+              className={`rounded-xl p-3 ${
+                isDarkMode
+                  ? "bg-[#432819]"
+                  : "bg-[#FFF0D8]"
+              }`}
+            >
               <MapPinned
                 className="text-[#F0440A]"
                 size={22}
@@ -258,18 +294,20 @@ function ZonePlanningContent() {
             </div>
 
             <div>
-              <h2 className="font-bold text-[#38231C]">
+              <h2 className={`font-bold ${primaryText}`}>
                 Planning Locality
               </h2>
 
-              <p className="text-sm text-[#806B5D]">
+              <p className={`text-sm ${secondaryText}`}>
                 Selected ward for zone planning
               </p>
             </div>
           </div>
 
           {loading ? (
-            <div className="mt-5 flex items-center gap-2 text-sm text-[#806B5D]">
+            <div
+              className={`mt-5 flex items-center gap-2 text-sm ${secondaryText}`}
+            >
               <LoaderCircle
                 className="animate-spin"
                 size={17}
@@ -277,26 +315,32 @@ function ZonePlanningContent() {
               Loading locality...
             </div>
           ) : error ? (
-            <div className="mt-5 flex items-center gap-2 text-sm text-red-600">
+            <div className="mt-5 flex items-center gap-2 text-sm text-red-500">
               <AlertCircle size={17} />
               {error}
             </div>
           ) : locality ? (
-            <div className="mt-5 rounded-xl border border-[#EADCC9] bg-[#FFF8EB] p-4">
-              <h3 className="text-lg font-bold text-[#38231C]">
+            <div
+              className={`mt-5 rounded-xl border p-4 ${innerCardClass}`}
+            >
+              <h3 className={`text-lg font-bold ${primaryText}`}>
                 {locality.name}
               </h3>
 
-              <p className="mt-1 text-sm text-[#806B5D]">
+              <p className={`mt-1 text-sm ${secondaryText}`}>
                 {locality.city}, {locality.state}
               </p>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                <span className="rounded-full bg-[#FFF0D8] px-3 py-1 text-xs font-semibold text-[#E65B16]">
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${accentBadge}`}
+                >
                   Ward locality
                 </span>
 
-                <span className="rounded-full bg-[#F1EDE6] px-3 py-1 text-xs text-[#806B5D]">
+                <span
+                  className={`rounded-full px-3 py-1 text-xs ${mutedBadge}`}
+                >
                   Source:{" "}
                   {locality.source_feature_id ??
                     "Unavailable"}
@@ -304,17 +348,19 @@ function ZonePlanningContent() {
               </div>
             </div>
           ) : (
-            <div className="mt-5 rounded-xl border border-dashed border-[#D8C7B5] p-6 text-center">
+            <div
+              className={`mt-5 rounded-xl border border-dashed p-6 text-center ${dashedBorder}`}
+            >
               <MapPin
                 size={28}
                 className="mx-auto text-[#F0440A]"
               />
 
-              <h3 className="mt-3 font-bold text-[#38231C]">
+              <h3 className={`mt-3 font-bold ${primaryText}`}>
                 No locality selected
               </h3>
 
-              <p className="mt-1 text-sm text-[#806B5D]">
+              <p className={`mt-1 text-sm ${secondaryText}`}>
                 Visit Locality Explorer and select a ward
                 to begin planning.
               </p>
@@ -323,20 +369,26 @@ function ZonePlanningContent() {
         </div>
 
         {/* Zone Drawing Workspace */}
-        <div className="rounded-2xl border border-[#EADCC9] bg-white p-5">
+        <div
+          className={`rounded-2xl border p-5 ${cardClass}`}
+        >
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-[#38231C]">
+              <h2
+                className={`text-lg font-bold ${primaryText}`}
+              >
                 Zone Drawing Workspace
               </h2>
 
-              <p className="mt-1 text-sm text-[#806B5D]">
+              <p className={`mt-1 text-sm ${secondaryText}`}>
                 Draw and edit a proposed zone inside the
                 selected ward.
               </p>
             </div>
 
-            <span className="rounded-full bg-[#FFF0D8] px-3 py-1 text-xs font-semibold text-[#E65B16]">
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-semibold ${accentBadge}`}
+            >
               Interactive mapping
             </span>
           </div>
@@ -352,13 +404,15 @@ function ZonePlanningContent() {
               {/* Drawing status */}
               <div className="mt-4 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-sm text-[#806B5D]">
+                  <p className={`text-sm ${secondaryText}`}>
                     {proposedGeometry
                       ? "Proposed boundary captured successfully."
                       : "Use the polygon tool on the map to draw a boundary."}
                   </p>
 
-                  <span className="rounded-full bg-[#F1EDE6] px-3 py-1 text-xs font-medium text-[#806B5D]">
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-medium ${mutedBadge}`}
+                  >
                     {proposedGeometry
                       ? "Draft available"
                       : "No draft yet"}
@@ -369,12 +423,16 @@ function ZonePlanningContent() {
                 {proposedArea !== null &&
                   areaInHectares !== null && (
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      <div className="rounded-xl border border-[#EADCC9] bg-[#FFF8EB] p-4">
-                        <p className="text-sm text-[#806B5D]">
+                      <div
+                        className={`rounded-xl border p-4 ${innerCardClass}`}
+                      >
+                        <p className={`text-sm ${secondaryText}`}>
                           Proposed Zone Area
                         </p>
 
-                        <p className="mt-2 text-2xl font-bold text-[#38231C]">
+                        <p
+                          className={`mt-2 text-2xl font-bold ${primaryText}`}
+                        >
                           {proposedArea.toLocaleString(
                             "en-IN",
                             {
@@ -383,17 +441,21 @@ function ZonePlanningContent() {
                           )}
                         </p>
 
-                        <p className="text-xs text-[#806B5D]">
+                        <p className={`text-xs ${secondaryText}`}>
                           Square metres (m²)
                         </p>
                       </div>
 
-                      <div className="rounded-xl border border-[#EADCC9] bg-[#FFF8EB] p-4">
-                        <p className="text-sm text-[#806B5D]">
+                      <div
+                        className={`rounded-xl border p-4 ${innerCardClass}`}
+                      >
+                        <p className={`text-sm ${secondaryText}`}>
                           Area in Hectares
                         </p>
 
-                        <p className="mt-2 text-2xl font-bold text-[#38231C]">
+                        <p
+                          className={`mt-2 text-2xl font-bold ${primaryText}`}
+                        >
                           {areaInHectares.toLocaleString(
                             "en-IN",
                             {
@@ -402,7 +464,7 @@ function ZonePlanningContent() {
                           )}
                         </p>
 
-                        <p className="text-xs text-[#806B5D]">
+                        <p className={`text-xs ${secondaryText}`}>
                           Hectares (ha)
                         </p>
                       </div>
@@ -410,25 +472,29 @@ function ZonePlanningContent() {
                   )}
 
                 {/* Ward containment validation */}
-                <div className="rounded-xl border border-[#EADCC9] bg-[#FFF8EB] p-4">
+                <div
+                  className={`rounded-xl border p-4 ${innerCardClass}`}
+                >
                   <div className="flex items-center gap-2">
                     <MapPinned
                       size={19}
                       className="text-[#F0440A]"
                     />
 
-                    <h3 className="font-bold text-[#38231C]">
+                    <h3 className={`font-bold ${primaryText}`}>
                       Ward Boundary Validation
                     </h3>
                   </div>
 
-                  <p className="mt-1 text-sm text-[#806B5D]">
+                  <p className={`mt-1 text-sm ${secondaryText}`}>
                     Checking whether your proposed zone
                     fits inside the selected ward.
                   </p>
 
                   {loading ? (
-                    <p className="mt-3 flex items-center gap-2 text-sm text-[#806B5D]">
+                    <p
+                      className={`mt-3 flex items-center gap-2 text-sm ${secondaryText}`}
+                    >
                       <LoaderCircle
                         size={16}
                         className="animate-spin"
@@ -436,21 +502,27 @@ function ZonePlanningContent() {
                       Loading ward boundary...
                     </p>
                   ) : !wardBoundary ? (
-                    <p className="mt-3 flex items-center gap-2 text-sm text-amber-700">
+                    <p className="mt-3 flex items-center gap-2 text-sm text-amber-500">
                       <AlertTriangle size={16} />
                       Ward boundary is unavailable.
                     </p>
                   ) : !proposedGeometry ? (
-                    <p className="mt-3 text-sm text-[#806B5D]">
+                    <p className={`mt-3 text-sm ${secondaryText}`}>
                       Draw a polygon to validate its boundary.
                     </p>
                   ) : isWithinWard === true ? (
-                    <p className="mt-3 flex items-center gap-2 font-semibold text-green-700">
+                    <p
+                      className={`mt-3 flex items-center gap-2 font-semibold ${
+                        isDarkMode
+                          ? "text-green-400"
+                          : "text-green-700"
+                      }`}
+                    >
                       <CheckCircle2 size={18} />
                       Valid — Polygon is within the selected ward.
                     </p>
                   ) : (
-                    <p className="mt-3 flex items-center gap-2 font-semibold text-red-600">
+                    <p className="mt-3 flex items-center gap-2 font-semibold text-red-500">
                       <XCircle size={18} />
                       Invalid — Polygon extends outside the
                       selected ward or geometry validation failed.
@@ -460,17 +532,21 @@ function ZonePlanningContent() {
               </div>
             </>
           ) : (
-            <div className="flex min-h-[300px] flex-col items-center justify-center rounded-xl border border-dashed border-[#D8C7B5] p-6 text-center">
+            <div
+              className={`flex min-h-[300px] flex-col items-center justify-center rounded-xl border border-dashed p-6 text-center ${dashedBorder}`}
+            >
               <MapPinned
                 size={32}
                 className="text-[#F0440A]"
               />
 
-              <h3 className="mt-3 font-bold text-[#38231C]">
+              <h3 className={`mt-3 font-bold ${primaryText}`}>
                 Select a ward first
               </h3>
 
-              <p className="mt-1 max-w-md text-sm text-[#806B5D]">
+              <p
+                className={`mt-1 max-w-md text-sm ${secondaryText}`}
+              >
                 Select a locality in Locality Explorer to
                 open its boundary and start drawing a
                 proposed zone.
@@ -484,10 +560,16 @@ function ZonePlanningContent() {
 }
 
 export default function ZonePlanningPage() {
+  const { isDarkMode } = useTheme();
+
   return (
     <Suspense
       fallback={
-        <div className="min-h-[400px] animate-pulse rounded-2xl bg-gray-100" />
+        <div
+          className={`min-h-[400px] animate-pulse rounded-2xl ${
+            isDarkMode ? "bg-[#202522]" : "bg-gray-100"
+          }`}
+        />
       }
     >
       <ZonePlanningContent />
