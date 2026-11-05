@@ -43,3 +43,6 @@ next-env.d.ts
 repomix-output.xml.zip
 
 UTSAVZERO_DEVELOPMENT_HANDOFF.md
+
+# UtsavZero generated OSM bulk-import data
+/data/geodata/osm/bulk/
