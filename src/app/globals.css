@@ -2,34 +2,24 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
+/* ========================================
+   1. ROOT & GLOBAL STYLES
+======================================== */
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
-}
-
-html {
-  margin: 0;
-  padding: 0;
-  min-height: 100%;
-}
-
-@theme inline {
-  --font-lora: var(--lora-font);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 * {
   box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -41,6 +31,33 @@ body {
   min-height: 100%;
 }
 
+/* ========================================
+   2. TAILWIND THEME
+======================================== */
+
+@theme inline {
+  --font-lora: var(--lora-font);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* ========================================
+   3. DARK MODE
+======================================== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+/* ========================================
+   4. SCROLLBAR UTILITIES
+======================================== */
+
 .scrollbar-none {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -50,9 +67,78 @@ body {
   display: none;
 }
 
-/* --------------------------------
-   UtsavZero Leaflet Map
---------------------------------- */
+/* ========================================
+   5. UTSAVZERO GOLDEN EMBERS
+   Subtle floating celebration particles
+======================================== */
+
+.golden-embers {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 40;
+  contain: strict;
+}
+
+.golden-ember {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  opacity: 0;
+
+  box-shadow:
+    0 0 6px 2px rgba(255, 209, 102, 0.9),
+    0 0 16px 5px rgba(255, 153, 51, 0.45);
+
+  animation: ember-float linear infinite;
+  will-change: transform, opacity;
+}
+
+/* Slow, gentle floating motion */
+
+@keyframes ember-float {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 30px, 0) scale(0.5);
+  }
+
+  20% {
+    opacity: 0.9;
+  }
+
+  50% {
+    opacity: 1;
+    transform: translate3d(var(--drift), -65px, 0) scale(1.3);
+  }
+
+  80% {
+    opacity: 0.7;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(
+      calc(var(--drift) * -0.5),
+      -120px,
+      0
+    ) scale(0.5);
+  }
+}
+
+/* Respect accessibility preferences */
+
+@media (prefers-reduced-motion: reduce) {
+  .golden-embers {
+    display: none;
+  }
+}
+
+/* ========================================
+   6. UTSAVZERO LEAFLET MAP
+======================================== */
 
 .utsav-map-marker {
   background: transparent !important;
@@ -86,7 +172,6 @@ body {
   transition: filter 300ms ease;
 }
 
-
 /* UtsavZero dark map */
 
 .utsav-dark-map .leaflet-tile-pane {
@@ -94,8 +179,9 @@ body {
   transition: filter 300ms ease;
 }
 
-
-/* Leaflet-Geoman toolbar layout fixes */
+/* ========================================
+   7. LEAFLET-GEOMAN TOOLBAR FIXES
+======================================== */
 
 .leaflet-container .leaflet-pm-toolbar {
   z-index: 1000;
@@ -125,15 +211,19 @@ body {
   z-index: 1100 !important;
 }
 
-.leaflet-container .leaflet-pm-toolbar .button-container.active
-.leaflet-pm-actions-container {
+.leaflet-container
+  .leaflet-pm-toolbar
+  .button-container.active
+  .leaflet-pm-actions-container {
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;
 }
 
-.leaflet-container .leaflet-pm-toolbar .leaflet-pm-actions-container
-a.leaflet-pm-action {
+.leaflet-container
+  .leaflet-pm-toolbar
+  .leaflet-pm-actions-container
+  a.leaflet-pm-action {
   display: inline-block !important;
   position: relative !important;
   width: auto !important;
@@ -151,7 +241,9 @@ a.leaflet-pm-action {
   border-right: 1px solid #eee !important;
 }
 
-.leaflet-container .leaflet-pm-toolbar
-.leaflet-pm-actions-container a.leaflet-pm-action:hover {
+.leaflet-container
+  .leaflet-pm-toolbar
+  .leaflet-pm-actions-container
+  a.leaflet-pm-action:hover {
   background: #e94b0b !important;
 }
