@@ -117,7 +117,9 @@ export async function proxy(request: NextRequest) {
     (item) => item.role as AppRole
   );
 
-  const isCivicAdmin = userRoles.includes("civic_demo_admin");
+  const isCivicAdmin =
+  userRoles.includes("civic_demo_admin") ||
+  userRoles.includes("government_organizer");
 
   const canHostEvents =
     userRoles.includes("private_organizer") ||
