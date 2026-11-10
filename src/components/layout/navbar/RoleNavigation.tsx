@@ -24,11 +24,14 @@ export default function RoleNavigation({
 
   if (loading || !user) return null;
 
-  const isCivicAdmin = roles.includes("civic_demo_admin");
+  const isCivicAdmin =
+    roles.includes("civic_demo_admin") ||
+    roles.includes("government_organizer");
+
   const isOrganizer = roles.includes("private_organizer");
   const isCitizen = roles.includes("citizen");
 
-  // Higher-level roles take priority over the default citizen role.
+  // Role priority: Civic > Private Organizer > Citizen
   const navigationItems = isCivicAdmin
     ? [
         {
