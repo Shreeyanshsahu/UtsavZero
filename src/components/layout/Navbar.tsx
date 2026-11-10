@@ -21,7 +21,9 @@ export default function Navbar({
 }: NavbarProps) {
   const { user, roles, loading } = useAuth();
 
-  const isCivicAdmin = roles.includes("civic_demo_admin");
+  const isCivicAdmin =
+  roles.includes("civic_demo_admin") ||
+  roles.includes("government_organizer");
 
   const canHostEvents =
     roles.includes("private_organizer") ||
